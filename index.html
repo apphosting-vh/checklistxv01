@@ -9,6 +9,17 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="CheckMate" />
   <title>CheckMate</title>
+  <!-- Handle GitHub Pages SPA redirect from 404.html -->
+  <script>
+    (function(){
+      var redirect = sessionStorage.getItem('spa_redirect');
+      if (redirect) {
+        sessionStorage.removeItem('spa_redirect');
+        // Replace state so back button works correctly
+        window.history.replaceState(null, null, redirect);
+      }
+    })();
+  </script>
   <link rel="manifest" href="https://apphosting-vh.github.io/checklistxv01/manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

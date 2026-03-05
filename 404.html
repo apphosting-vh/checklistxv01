@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CheckMate</title>
+  <script>
+    // GitHub Pages SPA redirect trick
+    // Encode the full path into sessionStorage then redirect to index.html
+    var path = window.location.pathname;
+    var repo = path.split('/')[1]; // e.g. "checkmate"
+    sessionStorage.setItem('spa_redirect', window.location.href);
+    // Redirect to the repo root so index.html loads
+    window.location.replace('/' + repo + '/');
+  </script>
+</head>
+<body></body>
+</html>

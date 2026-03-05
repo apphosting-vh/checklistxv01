@@ -2,9 +2,11 @@
   "name": "CheckMate - Checklist App",
   "short_name": "CheckMate",
   "description": "A beautiful, offline-capable mobile checklist app. Create checklists, manage tasks with priorities, and stay organised — all saved locally on your device.",
-  "start_url": "/",
-  "scope": "/",
-  "id": "/",
+
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "./index.html",
+
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "portrait-primary",
@@ -112,17 +114,13 @@
       "name": "New Checklist",
       "short_name": "New List",
       "description": "Create a new checklist instantly",
-      "url": "/?action=new-list",
+      "url": "./index.html?action=new-list",
       "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
     }
   ],
 
   "related_applications": [],
   "prefer_related_applications": false,
-
-  "edge_side_panel": {
-    "preferred_width": 480
-  },
 
   "handle_links": "preferred",
 
@@ -131,7 +129,7 @@
   },
 
   "share_target": {
-    "action": "/?share-target",
+    "action": "./index.html?share-target",
     "method": "GET",
     "params": {
       "title": "title",
