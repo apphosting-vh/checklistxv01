@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#6c3fff" />
+  <meta name="description" content="CheckMate – A beautiful mobile checklist app" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="CheckMate" />
+  <title>CheckMate</title>
+  <link rel="manifest" href="https://apphosting-vh.github.io/checklistxv01/manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #eef1ff;
+      --surface: #ffffff;
+      --surface2: #ffffff;
+      --card: #ffffff;
+      --card-hover: #f3f0ff;
+      --accent: #6c3fff;
+      --accent2: #ff5c8a;
+      --accent3: #00bfa5;
+      --accent4: #ff8c00;
+      --text: #1a1340;
+      --text-muted: #8080aa;
+      --border: rgba(108,63,255,0.12);
+      --shadow: 0 4px 24px rgba(108,63,255,0.10);
+      --radius: 18px;
+      --radius-sm: 10px;
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow: hidden; }
+
+    #root { height: 100%; display: flex; flex-direction: column; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(108,63,255,0.18); border-radius: 4px; }
+
+    /* App Shell */
+    .app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-width: 480px; margin: 0 auto; position: relative; overflow: hidden; }
+
+    /* Header */
+    .header {
+      padding: 52px 24px 20px;
+      background: linear-gradient(180deg, var(--surface) 0%, rgba(238,241,255,0) 100%);
+      position: relative;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.5px; }
+    .logo span { color: var(--accent); }
+    .header-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 300; letter-spacing: 0.3px; }
+
+    /* View Tabs */
+    .view-tabs {
+      display: flex; gap: 6px; padding: 12px 24px 0;
+      flex-shrink: 0;
+    }
+    .tab-btn {
+      flex: 1; padding: 10px 8px; border: none; border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s ease; background: var(--card);
+      color: var(--text-muted); letter-spacing: 0.2px; box-shadow: var(--shadow);
+    }
+    .tab-btn.active { background: linear-gradient(135deg, #7c4dff 0%, #e040fb 100%); color: white; font-weight: 700; box-shadow: 0 4px 14px rgba(124,77,255,0.35); }
+    .tab-btn:active { transform: scale(0.97); }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex; gap: 12px; padding: 14px 24px 0;
+      flex-shrink: 0;
+    }
+    .stat-chip {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 20px;
+      background: var(--card); font-size: 12px; color: var(--text-muted);
+    }
+    .stat-chip .dot { width: 7px; height: 7px; border-radius: 50%; }
+    .stat-chip .num { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; color: var(--text); }
+
+    /* Content area */
+    .content {
+      flex: 1; overflow-y: auto; padding: 16px 24px 120px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ── LISTS VIEW ── */
+    .lists-grid { display: flex; flex-direction: column; gap: 12px; }
+
+    .list-card {
+      background: var(--card); border-radius: var(--radius);
+      padding: 18px 20px; cursor: pointer;
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
+      position: relative; overflow: hidden;
+      animation: fadeUp 0.3s ease both;
+    }
+    .list-card::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 4px; border-radius: 4px 0 0 4px;
+    }
+    .list-card:active { transform: scale(0.98); background: var(--card-hover); }
+
+    .list-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .list-card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; line-height: 1.2; flex: 1; }
+    .list-card-actions { display: flex; gap: 8px; }
+    .icon-btn {
+      width: 34px; height: 34px; border-radius: 50%; border: none;
+      background: rgba(108,63,255,0.08); color: var(--text-muted);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.18s ease; font-size: 15px; flex-shrink: 0;
+    }
+    .icon-btn:hover { background: linear-gradient(135deg,#ede7ff,#fce4ec); color: #7c4dff; transform: scale(1.1); }
+    .icon-btn.danger:hover { background: linear-gradient(135deg,#fce4ec,#fff3e0); color: #e53935; }
+    .icon-btn:active { transform: scale(0.88); }
+
+    .list-card-meta { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+    .progress-bar { flex: 1; height: 4px; background: rgba(108,63,255,0.1); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+    .progress-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; font-weight: 500; }
+    .task-count { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      animation: fadeUp 0.4s ease both;
+    }
+    .empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.6; }
+    .empty-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; margin-bottom: 8px; }
+    .empty-sub { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── TASKS VIEW ── */
+    .tasks-header {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+    }
+    .back-btn {
+      height: 38px; padding: 0 16px; border-radius: 50px; border: 1.5px solid rgba(108,63,255,0.18);
+      background: rgba(124,77,255,0.06); color: var(--accent); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      font-size: 16px; font-family: 'Syne', sans-serif; font-weight: 700;
+      transition: all 0.18s ease; flex-shrink: 0; white-space: nowrap;
+    }
+    .back-btn:hover { background: rgba(124,77,255,0.12); }
+    .back-btn:active { transform: scale(0.93); }
+    .tasks-header-text { flex: 1; }
+    .tasks-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.1; }
+    .tasks-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    .task-filters { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+    .filter-pill {
+      padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+      font-size: 12px; font-weight: 500; cursor: pointer; background: var(--card);
+      color: var(--text-muted); transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+    }
+    .filter-pill.active { background: linear-gradient(135deg,#ede7ff,#fce4ff); border-color: #7c4dff; color: #7c4dff; font-weight: 600; }
+    .filter-pill:active { transform: scale(0.95); }
+
+    .tasks-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .task-item {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--card); border-radius: var(--radius-sm);
+      padding: 14px 14px 14px 16px;
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
+      animation: fadeUp 0.25s ease both;
+      position: relative;
+    }
+    .task-item.done {
+      background: #f0f0f4;
+      border-color: rgba(0,0,0,0.05);
+      opacity: 1;
+    }
+    .task-item.done .task-text { color: #9090aa; }
+    .task-item.done .task-check.checked { background: #9090aa; border-color: #9090aa; }
+    .task-item.done .task-priority { opacity: 0.45; }
+    .task-item:active { transform: scale(0.99); }
+
+    .task-check {
+      width: 24px; height: 24px; border-radius: 8px; flex-shrink: 0;
+      border: 2px solid rgba(108,63,255,0.25);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; font-size: 13px; font-weight: 700;
+    }
+    .task-check.checked { border-color: var(--accent3); background: var(--accent3); color: #fff; }
+
+    .task-text { flex: 1; font-size: 15px; line-height: 1.4; }
+
+    .task-priority { font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+    .priority-high { background: #ffe0e6; color: #d4003a; }
+    .priority-med { background: #fff3db; color: #b86a00; }
+    .priority-low { background: #d6f5f0; color: #007a6a; }
+
+    /* FAB */
+    .fab {
+      position: fixed; bottom: 28px; right: 50%;
+      transform: translateX(50%);
+      max-width: calc(480px - 48px);
+      width: calc(100% - 48px);
+      background: linear-gradient(135deg, #7c4dff 0%, #e040fb 100%);
+      color: white; border: none; border-radius: 50px;
+      padding: 17px 32px;
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px;
+      letter-spacing: 0.5px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+      box-shadow: 0 6px 28px rgba(124,77,255,0.42), 0 2px 8px rgba(0,0,0,0.08);
+      transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1); z-index: 50;
+    }
+    .fab:active { transform: translateX(50%) scale(0.96); box-shadow: 0 3px 14px rgba(124,77,255,0.28); }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(26,19,64,0.45);
+      backdrop-filter: blur(6px); z-index: 100;
+      display: flex; align-items: flex-end; justify-content: center;
+      animation: fadeIn 0.2s ease;
+      padding: 0 0 env(safe-area-inset-bottom);
+    }
+    .modal {
+      background: var(--surface2); width: 100%; max-width: 480px;
+      border-radius: 24px 24px 0 0; padding: 28px 24px 40px;
+      animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border-top: 1px solid var(--border);
+    }
+    .modal-handle { width: 40px; height: 4px; border-radius: 4px; background: rgba(108,63,255,0.18); margin: 0 auto 24px; }
+    .modal-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 20px; }
+
+    /* Form elements */
+    .form-group { margin-bottom: 16px; }
+    .form-label { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 8px; display: block; }
+    .form-input {
+      width: 100%; padding: 14px 16px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px;
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-input:focus { border-color: var(--accent); }
+    .form-input::placeholder { color: var(--text-muted); }
+    textarea.form-input { resize: none; min-height: 80px; line-height: 1.5; }
+
+    .color-picker { display: flex; gap: 10px; flex-wrap: wrap; }
+    .color-dot {
+      width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+      transition: all 0.2s; border: 3px solid transparent;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .color-dot.selected { border-color: #1a1340; transform: scale(1.15); }
+
+    .priority-picker { display: flex; gap: 8px; }
+    .priority-btn {
+      flex: 1; padding: 10px 8px; border: 1.5px solid rgba(108,63,255,0.14); border-radius: 50px;
+      background: rgba(108,63,255,0.04); color: var(--text-muted); font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center;
+      letter-spacing: 0.3px;
+    }
+    .priority-btn.sel-high { background: #ffe0e6; border-color: #d4003a; color: #d4003a; }
+    .priority-btn.sel-med { background: #fff3db; border-color: #b86a00; color: #b86a00; }
+    .priority-btn.sel-low { background: #d6f5f0; border-color: #007a6a; color: #007a6a; }
+    .priority-btn:active { transform: scale(0.96); }
+
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-cancel {
+      flex: 1; padding: 14px 18px; border-radius: 50px;
+      border: 1.5px solid rgba(108,63,255,0.18);
+      background: transparent; color: var(--text-muted);
+      font-family: 'Syne', sans-serif; font-weight: 600; font-size: 14px;
+      cursor: pointer; transition: all 0.2s; letter-spacing: 0.2px;
+    }
+    .btn-cancel:hover { background: rgba(108,63,255,0.06); color: var(--text); }
+    .btn-confirm {
+      flex: 2; padding: 14px 22px; border-radius: 50px; border: none;
+      background: linear-gradient(135deg, #7c4dff 0%, #e040fb 100%);
+      color: white; font-family: 'Syne', sans-serif;
+      font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;
+      box-shadow: 0 4px 18px rgba(124,77,255,0.35); letter-spacing: 0.3px;
+    }
+    .btn-confirm:hover { box-shadow: 0 6px 24px rgba(124,77,255,0.45); }
+    .btn-cancel:active, .btn-confirm:active { transform: scale(0.97); }
+
+    /* Delete confirm modal */
+    .delete-modal { text-align: center; }
+    .delete-icon { font-size: 40px; margin-bottom: 12px; }
+    .delete-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 8px; }
+    .delete-sub { color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 24px; }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    /* Swipe hint on tasks */
+    .swipe-hint { font-size: 11px; color: var(--text-muted); text-align: center; margin-bottom: 12px; opacity: 0.6; }
+
+    /* Search bar */
+    .search-wrap { position: relative; margin-bottom: 14px; }
+    .search-input {
+      width: 100%; padding: 12px 16px 12px 40px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: var(--card);
+      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+      outline: none; transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px; pointer-events: none; }
+
+    /* Progress ring in list card top-right */
+    .ring-wrap { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
+    .ring-wrap svg { transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: rgba(108,63,255,0.10); stroke-width: 3; }
+    .ring-fill { fill: none; stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset 0.4s ease; }
+    .ring-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script>
+  const { useState, useEffect, useRef, useCallback } = React;
+
+  // ── Palette options ──
+  const COLORS = [
+    { id:'red',    val:'#e94560' },
+    { id:'orange', val:'#f5a623' },
+    { id:'teal',   val:'#00d4aa' },
+    { id:'blue',   val:'#4a9eff' },
+    { id:'purple', val:'#b06cff' },
+    { id:'pink',   val:'#ff6bb3' },
+  ];
+
+  // ── Local storage helpers ──
+  const STORE_KEY = 'checkmate_v3';
+  const SCHEMA_VERSION = 3;
+
+  const defaultData = () => ({ version: SCHEMA_VERSION, lists: [], tasks: {} });
+
+  const load = () => {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return defaultData();
+      const parsed = JSON.parse(raw);
+      // migrate older schemas
+      if (!parsed.version || parsed.version < SCHEMA_VERSION) {
+        const migrated = defaultData();
+        migrated.lists = parsed.lists || [];
+        migrated.tasks = parsed.tasks || {};
+        return migrated;
+      }
+      return parsed;
+    } catch(e) {
+      console.warn('CheckMate: localStorage read failed, starting fresh.', e);
+      return defaultData();
+    }
+  };
+
+  const save = (data) => {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ ...data, version: SCHEMA_VERSION }));
+    } catch(e) {
+      console.warn('CheckMate: localStorage write failed.', e);
+    }
+  };
+
+  // ── Tiny ID ──
+  const uid = () => Math.random().toString(36).slice(2, 9);
+
+  // ── Progress Ring ──
+  function Ring({ pct, color }) {
+    const r = 18, circ = 2 * Math.PI * r;
+    const offset = circ - (pct / 100) * circ;
+    return React.createElement('div', { className: 'ring-wrap' },
+      React.createElement('svg', { width: 44, height: 44, viewBox: '0 0 44 44' },
+        React.createElement('circle', { className: 'ring-bg', cx: 22, cy: 22, r }),
+        React.createElement('circle', {
+          className: 'ring-fill', cx: 22, cy: 22, r,
+          stroke: color || '#e94560',
+          strokeDasharray: circ,
+          strokeDashoffset: offset,
+        })
+      ),
+      React.createElement('div', { className: 'ring-text' }, Math.round(pct) + '%')
+    );
+  }
+
+  // ── Main App ──
+  function App() {
+    const [data, setData] = useState(load);
+    const [view, setView] = useState('lists'); // 'lists' | 'tasks'
+    const [activeList, setActiveList] = useState(null);
+    const [taskFilter, setTaskFilter] = useState('all'); // all | active | done
+    const [search, setSearch] = useState('');
+    const [modal, setModal] = useState(null);
+    // modal types: 'newList' | 'editList' | 'newTask' | 'editTask' | 'deleteList' | 'deleteTask'
+
+    useEffect(() => { save(data); }, [data]);
+
+    const lists = data.lists;
+    const tasks = (listId) => data.tasks[listId] || [];
+
+    const currentList = lists.find(l => l.id === activeList);
+    const currentTasks = activeList ? tasks(activeList) : [];
+
+    // ── Stats ──
+    const totalLists = lists.length;
+    const totalTasks = Object.values(data.tasks).flat().length;
+    const doneTasks = Object.values(data.tasks).flat().filter(t => t.done).length;
+
+    // ── List CRUD ──
+    const createList = ({ title, color }) => {
+      const id = uid();
+      setData(d => ({ ...d, lists: [...d.lists, { id, title, color, createdAt: Date.now() }], tasks: { ...d.tasks, [id]: [] } }));
+    };
+    const updateList = (id, patch) => {
+      setData(d => ({ ...d, lists: d.lists.map(l => l.id === id ? { ...l, ...patch } : l) }));
+    };
+    const deleteList = (id) => {
+      setData(d => { const { [id]: _, ...rest } = d.tasks; return { ...d, lists: d.lists.filter(l => l.id !== id), tasks: rest }; });
+      if (activeList === id) { setView('lists'); setActiveList(null); }
+    };
+
+    // ── Task CRUD ──
+    const createTask = (listId, { text, priority }) => {
+      const t = { id: uid(), text, priority, done: false, createdAt: Date.now() };
+      setData(d => ({ ...d, tasks: { ...d.tasks, [listId]: [...(d.tasks[listId] || []), t] } }));
+    };
+    const updateTask = (listId, taskId, patch) => {
+      setData(d => ({ ...d, tasks: { ...d.tasks, [listId]: d.tasks[listId].map(t => t.id === taskId ? { ...t, ...patch } : t) } }));
+    };
+    const deleteTask = (listId, taskId) => {
+      setData(d => ({ ...d, tasks: { ...d.tasks, [listId]: d.tasks[listId].filter(t => t.id !== taskId) } }));
+    };
+    const toggleTask = (listId, taskId) => {
+      setData(d => {
+        const updated = d.tasks[listId].map(t =>
+          t.id === taskId ? { ...t, done: !t.done, doneAt: !t.done ? Date.now() : null } : t
+        );
+        // sort: undone first (by createdAt), done last (by doneAt)
+        const sorted = [
+          ...updated.filter(t => !t.done).sort((a,b) => a.createdAt - b.createdAt),
+          ...updated.filter(t =>  t.done).sort((a,b) => a.doneAt - b.doneAt),
+        ];
+        return { ...d, tasks: { ...d.tasks, [listId]: sorted } };
+      });
+    };
+
+    // ── Filtered tasks ──
+    const filteredTasks = currentTasks.filter(t => {
+      const matchFilter = taskFilter === 'all' || (taskFilter === 'active' && !t.done) || (taskFilter === 'done' && t.done);
+      const matchSearch = !search || t.text.toLowerCase().includes(search.toLowerCase());
+      return matchFilter && matchSearch;
+    });
+
+    // ── Progress ──
+    const listProgress = (id) => {
+      const ts = tasks(id);
+      if (!ts.length) return 0;
+      return (ts.filter(t => t.done).length / ts.length) * 100;
+    };
+
+    // ── Header subtitle ──
+    const subtitle = view === 'lists'
+      ? `${totalLists} list${totalLists !== 1 ? 's' : ''} · ${doneTasks}/${totalTasks} tasks done`
+      : `${currentTasks.filter(t=>t.done).length}/${currentTasks.length} completed`;
+
+    return React.createElement('div', { className: 'app' },
+      // Header
+      React.createElement('div', { className: 'header' },
+        React.createElement('div', { className: 'header-top' },
+          React.createElement('div', { className: 'logo' }, 'Check', React.createElement('span', null, 'Mate')),
+          view === 'lists' && React.createElement('div', { style: { display:'flex', gap: 8 } },
+            React.createElement('button', {
+              className: 'icon-btn',
+              onClick: () => setModal({ type: 'newList' }),
+              title: 'New List'
+            }, '+')
+          )
+        ),
+        React.createElement('div', { className: 'header-subtitle' }, subtitle)
+      ),
+
+      // View tabs (only on lists view)
+      view === 'lists' && React.createElement('div', { className: 'view-tabs' },
+        React.createElement('button', { className: 'tab-btn active' }, '📋 My Lists')
+      ),
+
+      // Content
+      React.createElement('div', { className: 'content' },
+        view === 'lists'
+          ? React.createElement(ListView, {
+              lists, tasks, listProgress, COLORS,
+              onOpen: (id) => { setActiveList(id); setView('tasks'); setTaskFilter('all'); setSearch(''); },
+              onEdit: (l) => setModal({ type: 'editList', list: l }),
+              onDelete: (l) => setModal({ type: 'deleteList', list: l }),
+            })
+          : React.createElement(TasksView, {
+              list: currentList, tasks: filteredTasks, allTasks: currentTasks,
+              filter: taskFilter, search,
+              onBack: () => { setView('lists'); setActiveList(null); },
+              onFilterChange: setTaskFilter,
+              onSearch: setSearch,
+              onToggle: (tid) => toggleTask(activeList, tid),
+              onEdit: (t) => setModal({ type: 'editTask', task: t }),
+              onDelete: (t) => setModal({ type: 'deleteTask', task: t }),
+            })
+      ),
+
+      // FAB
+      view === 'lists'
+        ? React.createElement('button', { className: 'fab', onClick: () => setModal({ type: 'newList' }) },
+            React.createElement('span', null, '+'), 'New Checklist'
+          )
+        : React.createElement('button', { className: 'fab', onClick: () => setModal({ type: 'newTask' }) },
+            React.createElement('span', null, '+'), 'Add Items'
+          ),
+
+      // Modals
+      modal && React.createElement(ModalLayer, {
+        modal, COLORS,
+        onClose: () => setModal(null),
+        onCreate: (payload) => {
+          if (modal.type === 'newList') createList(payload);
+          else if (modal.type === 'newTask') createTask(activeList, payload);
+        },
+        onUpdate: (payload) => {
+          if (modal.type === 'editList') updateList(modal.list.id, payload);
+          else if (modal.type === 'editTask') updateTask(activeList, modal.task.id, payload);
+        },
+        onConfirmDelete: () => {
+          if (modal.type === 'deleteList') deleteList(modal.list.id);
+          else if (modal.type === 'deleteTask') deleteTask(activeList, modal.task.id);
+        },
+      })
+    );
+  }
+
+  // ── Lists View ──
+  function ListView({ lists, tasks, listProgress, COLORS, onOpen, onEdit, onDelete }) {
+    if (!lists.length) return React.createElement('div', { className: 'empty-state' },
+      React.createElement('div', { className: 'empty-icon' }, '✅'),
+      React.createElement('div', { className: 'empty-title' }, 'No checklists yet'),
+      React.createElement('div', { className: 'empty-sub' }, 'Tap the + button below\nto create your first checklist')
+    );
+
+    return React.createElement('div', { className: 'lists-grid' },
+      ...lists.map((list, i) => {
+        const ts = tasks(list.id) || [];
+        const done = ts.filter(t => t.done).length;
+        const pct = listProgress(list.id);
+        const color = COLORS.find(c => c.id === list.color)?.val || '#e94560';
+
+        return React.createElement('div', {
+          key: list.id, className: 'list-card',
+          style: { animationDelay: i * 0.06 + 's' },
+          onClick: () => onOpen(list.id),
+        },
+          React.createElement('div', { style: { position:'absolute', left:0, top:0, bottom:0, width:4, background: color, borderRadius:'4px 0 0 4px' } }),
+          React.createElement('div', { className: 'list-card-header' },
+            React.createElement('div', { className: 'list-card-title' }, list.title),
+            React.createElement('div', { style: { display:'flex', alignItems:'center', gap:8 } },
+              React.createElement(Ring, { pct, color }),
+              React.createElement('div', { className: 'list-card-actions', onClick: e => e.stopPropagation() },
+                React.createElement('button', { className: 'icon-btn', onClick: () => onEdit(list), title: 'Edit' }, '✏️'),
+                React.createElement('button', { className: 'icon-btn danger', onClick: () => onDelete(list), title: 'Delete' }, '🗑️')
+              )
+            )
+          ),
+          React.createElement('div', { className: 'task-count' },
+            ts.length === 0 ? 'No tasks yet — tap to add' : `${done} of ${ts.length} task${ts.length !== 1 ? 's' : ''} completed`
+          )
+        );
+      })
+    );
+  }
+
+  // ── Tasks View ──
+  function TasksView({ list, tasks, allTasks, filter, search, onBack, onFilterChange, onSearch, onToggle, onEdit, onDelete }) {
+    if (!list) return null;
+    const done = allTasks.filter(t => t.done).length;
+    const total = allTasks.length;
+
+    return React.createElement(React.Fragment, null,
+      React.createElement('div', { className: 'tasks-header' },
+        React.createElement('button', { className: 'back-btn', onClick: onBack }, '←'),
+        React.createElement('div', { className: 'tasks-header-text' },
+          React.createElement('div', { className: 'tasks-title' }, list.title),
+          React.createElement('div', { className: 'tasks-subtitle' }, `${done}/${total} done`)
+        )
+      ),
+      React.createElement('div', { className: 'search-wrap' },
+        React.createElement('span', { className: 'search-icon' }, '🔍'),
+        React.createElement('input', {
+          type: 'text', className: 'search-input', placeholder: 'Search tasks…',
+          value: search, onChange: e => onSearch(e.target.value)
+        })
+      ),
+      React.createElement('div', { className: 'task-filters' },
+        ['all', 'active', 'done'].map(f =>
+          React.createElement('button', {
+            key: f, className: 'filter-pill' + (filter === f ? ' active' : ''),
+            onClick: () => onFilterChange(f)
+          }, f.charAt(0).toUpperCase() + f.slice(1))
+        )
+      ),
+      tasks.length === 0
+        ? React.createElement('div', { className: 'empty-state' },
+            React.createElement('div', { className: 'empty-icon' }, filter === 'done' ? '🎉' : '📝'),
+            React.createElement('div', { className: 'empty-title' }, filter === 'done' ? 'Nothing done yet!' : 'All clear!'),
+            React.createElement('div', { className: 'empty-sub' }, filter === 'all' ? 'Tap + to add your first task' : `No ${filter} tasks`)
+          )
+        : React.createElement('div', { className: 'tasks-list' },
+            ...tasks.map((task, i) =>
+              React.createElement('div', {
+                key: task.id,
+                className: 'task-item' + (task.done ? ' done' : ''),
+                style: { animationDelay: i * 0.04 + 's' }
+              },
+                React.createElement('div', {
+                  className: 'task-check' + (task.done ? ' checked' : ''),
+                  onClick: () => onToggle(task.id)
+                }, task.done ? '✓' : ''),
+                React.createElement('div', { className: 'task-text' }, task.text),
+                task.priority && React.createElement('span', {
+                  className: 'task-priority priority-' + task.priority.toLowerCase().slice(0,3)
+                }, task.priority),
+                React.createElement('div', { style: { display:'flex', gap:6 } },
+                  React.createElement('button', { className: 'icon-btn', onClick: () => onEdit(task) }, '✏️'),
+                  React.createElement('button', { className: 'icon-btn danger', onClick: () => onDelete(task) }, '🗑️')
+                )
+              )
+            )
+          )
+    );
+  }
+
+  // ── Modal Layer ──
+  function ModalLayer({ modal, COLORS, onClose, onCreate, onUpdate, onConfirmDelete }) {
+    const handleOverlayClick = (e) => { if (e.target === e.currentTarget) onClose(); };
+
+    let content;
+
+    if (modal.type === 'newList' || modal.type === 'editList') {
+      content = React.createElement(ListFormModal, {
+        COLORS, existing: modal.list,
+        onClose,
+        onSubmit: (payload) => { modal.type === 'newList' ? onCreate(payload) : onUpdate(payload); onClose(); }
+      });
+    } else if (modal.type === 'newTask' || modal.type === 'editTask') {
+      content = React.createElement(TaskFormModal, {
+        existing: modal.task,
+        onClose,
+        onSubmit: (payload) => { modal.type === 'newTask' ? onCreate(payload) : onUpdate(payload); onClose(); }
+      });
+    } else if (modal.type === 'deleteList' || modal.type === 'deleteTask') {
+      const isTask = modal.type === 'deleteTask';
+      content = React.createElement('div', { className: 'modal delete-modal' },
+        React.createElement('div', { className: 'modal-handle' }),
+        React.createElement('div', { className: 'delete-icon' }, '🗑️'),
+        React.createElement('div', { className: 'delete-title' }, isTask ? 'Delete Task?' : 'Delete List?'),
+        React.createElement('div', { className: 'delete-sub' },
+          isTask
+            ? `"${modal.task.text}" will be permanently removed.`
+            : `"${modal.list.title}" and all its tasks will be permanently deleted.`
+        ),
+        React.createElement('div', { className: 'modal-actions' },
+          React.createElement('button', { className: 'btn-cancel', onClick: onClose }, 'Cancel'),
+          React.createElement('button', {
+            className: 'btn-confirm',
+            style: { background: 'linear-gradient(135deg,#ff1744,#ff6d00)', borderRadius: '50px', boxShadow: '0 4px 18px rgba(255,23,68,0.35)' },
+            onClick: () => { onConfirmDelete(); onClose(); }
+          }, 'Delete')
+        )
+      );
+    }
+
+    return React.createElement('div', { className: 'modal-overlay', onClick: handleOverlayClick }, content);
+  }
+
+  // ── List Form Modal ──
+  function ListFormModal({ COLORS, existing, onClose, onSubmit }) {
+    const [title, setTitle] = useState(existing?.title || '');
+    const [color, setColor] = useState(existing?.color || 'red');
+    const inputRef = useRef();
+    useEffect(() => { setTimeout(() => inputRef.current?.focus(), 100); }, []);
+
+    const handleSubmit = () => {
+      if (!title.trim()) return;
+      onSubmit({ title: title.trim(), color });
+    };
+
+    return React.createElement('div', { className: 'modal' },
+      React.createElement('div', { className: 'modal-handle' }),
+      React.createElement('div', { className: 'modal-title' }, existing ? 'Edit Checklist' : 'New Checklist'),
+      React.createElement('div', { className: 'form-group' },
+        React.createElement('label', { className: 'form-label' }, 'Title'),
+        React.createElement('input', {
+          ref: inputRef, className: 'form-input', placeholder: 'e.g. Grocery Shopping…',
+          value: title, onChange: e => setTitle(e.target.value),
+          onKeyDown: e => e.key === 'Enter' && handleSubmit()
+        })
+      ),
+      React.createElement('div', { className: 'form-group' },
+        React.createElement('label', { className: 'form-label' }, 'Color'),
+        React.createElement('div', { className: 'color-picker' },
+          ...COLORS.map(c =>
+            React.createElement('div', {
+              key: c.id, className: 'color-dot' + (color === c.id ? ' selected' : ''),
+              style: { background: c.val },
+              onClick: () => setColor(c.id)
+            }, color === c.id ? React.createElement('span', { style: { color:'white', fontSize:14, fontWeight:700, textShadow:'0 1px 3px rgba(0,0,0,0.4)' } }, '✓') : null)
+          )
+        )
+      ),
+      React.createElement('div', { className: 'modal-actions' },
+        React.createElement('button', { className: 'btn-cancel', onClick: onClose }, 'Cancel'),
+        React.createElement('button', { className: 'btn-confirm', onClick: handleSubmit, disabled: !title.trim() }, existing ? 'Save' : 'Create')
+      )
+    );
+  }
+
+  // ── Task Form Modal ──
+  function TaskFormModal({ existing, onClose, onSubmit }) {
+    const [text, setText] = useState(existing?.text || '');
+    const [priority, setPriority] = useState(existing?.priority || 'Med');
+    const inputRef = useRef();
+    useEffect(() => { setTimeout(() => inputRef.current?.focus(), 100); }, []);
+
+    const handleSubmit = () => {
+      if (!text.trim()) return;
+      onSubmit({ text: text.trim(), priority });
+    };
+
+    const prioClass = (p) => {
+      if (priority === p) {
+        return 'priority-btn sel-' + p.toLowerCase().slice(0,3);
+      }
+      return 'priority-btn';
+    };
+
+    return React.createElement('div', { className: 'modal' },
+      React.createElement('div', { className: 'modal-handle' }),
+      React.createElement('div', { className: 'modal-title' }, existing ? 'Edit Task' : 'New Task'),
+      React.createElement('div', { className: 'form-group' },
+        React.createElement('label', { className: 'form-label' }, 'Task'),
+        React.createElement('textarea', {
+          ref: inputRef, className: 'form-input', placeholder: 'What needs to be done?',
+          value: text, onChange: e => setText(e.target.value), rows: 3
+        })
+      ),
+      React.createElement('div', { className: 'form-group' },
+        React.createElement('label', { className: 'form-label' }, 'Priority'),
+        React.createElement('div', { className: 'priority-picker' },
+          ['High', 'Med', 'Low'].map(p =>
+            React.createElement('button', { key: p, className: prioClass(p), onClick: () => setPriority(p) }, p)
+          )
+        )
+      ),
+      React.createElement('div', { className: 'modal-actions' },
+        React.createElement('button', { className: 'btn-cancel', onClick: onClose }, 'Cancel'),
+        React.createElement('button', { className: 'btn-confirm', onClick: handleSubmit, disabled: !text.trim() }, existing ? 'Save' : 'Add Items')
+      )
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+
+  // ── Inline Service Worker — full offline support ──
+  if ('serviceWorker' in navigator) {
+    // Try external sw.js first (GitHub Pages deployment), fall back to inline blob SW
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('https://apphosting-vh.github.io/checklistxv01/sw.js')
+        .then(reg => console.log('CheckMate SW registered:', reg.scope))
+        .catch(() => {
+          // Fallback: register an inline blob service worker
+          const swCode = `
+const CACHE='checkmate-v3';
+const URLS=['./','./index.html','./manifest.json'];
+self.addEventListener('install',e=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(URLS)).then(()=>self.skipWaiting()));
+});
+self.addEventListener('activate',e=>{
+  e.waitUntil(
+    caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
+    .then(()=>self.clients.claim())
+  );
+});
+self.addEventListener('fetch',e=>{
+  e.respondWith(caches.match(e.request).then(cached=>cached||fetch(e.request).catch(()=>cached)));
+});
+`;
+          const blob = new Blob([swCode], { type: 'application/javascript' });
+          const url  = URL.createObjectURL(blob);
+          navigator.serviceWorker.register(url)
+            .then(() => console.log('CheckMate inline SW registered'))
+            .catch(err => console.warn('SW registration failed:', err));
+        });
+    });
+  }
+  </script>
+</body>
+</html>
