@@ -144,7 +144,7 @@
       text-align: center; padding: 60px 20px;
       animation: fadeUp 0.4s ease both;
     }
-    .empty-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.6; }
+    .empty-icon { margin-bottom: 16px; opacity: 0.6; display: flex; justify-content: center; align-items: center; }
     .empty-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 20px; margin-bottom: 8px; }
     .empty-sub { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
 
@@ -380,7 +380,7 @@
 
     /* Delete confirm modal */
     .delete-modal { text-align: center; }
-    .delete-icon { font-size: 40px; margin-bottom: 12px; }
+    .delete-icon { margin-bottom: 12px; display: flex; justify-content: center; align-items: center; }
     .delete-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 8px; }
     .delete-sub { color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 24px; }
 
@@ -414,7 +414,7 @@
     }
     .search-input:focus { border-color: var(--accent); }
     .search-input::placeholder { color: var(--text-muted); }
-    .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 15px; pointer-events: none; }
+    .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; display: flex; align-items: center; }
 
     /* Progress ring in list card top-right */
     .ring-wrap { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
@@ -437,7 +437,7 @@
       border-bottom: 3px solid #7c4dff;
     }
     .update-toast.show { transform: translateX(-50%) translateY(0); }
-    .update-toast-icon { font-size: 22px; flex-shrink: 0; }
+    .update-toast-icon { flex-shrink: 0; display: flex; align-items: center; }
     .update-toast-text { flex: 1; }
     .update-toast-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 2px; }
     .update-toast-sub { font-size: 12px; opacity: 0.7; font-family: 'Nunito', sans-serif; }
@@ -462,13 +462,13 @@
 </head>
 <body>
   <div id="update-toast" class="update-toast" role="alert" aria-live="polite">
-    <div class="update-toast-icon">🚀</div>
+    <div class="update-toast-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></div>
     <div class="update-toast-text">
       <div class="update-toast-title">New version available</div>
       <div class="update-toast-sub">Tap to get the latest update</div>
     </div>
     <button class="update-toast-btn" id="update-btn" onclick="applyUpdate()">Update</button>
-    <button class="update-dismiss" id="dismiss-btn" onclick="dismissToast()" aria-label="Dismiss">✕</button>
+    <button class="update-dismiss" id="dismiss-btn" onclick="dismissToast()" aria-label="Dismiss"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
   </div>
   <div id="root"></div>
 
@@ -476,6 +476,27 @@
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script>
   const { useState, useEffect, useRef, useCallback } = React;
+
+  // ── SVG Icon Helpers ──
+  const rc = React.createElement;
+  const svgBase = (size, extra={}) => ({ width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round', style: { display:'block', flexShrink:0 }, ...extra });
+
+  const IconPencil    = ({size=18}={}) => rc('svg', svgBase(size), rc('path',{d:'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'}), rc('path',{d:'M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'}));
+  const IconTrash     = ({size=18}={}) => rc('svg', svgBase(size), rc('polyline',{points:'3 6 5 6 21 6'}), rc('path',{d:'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2'}), rc('line',{x1:10,y1:11,x2:10,y2:17}), rc('line',{x1:14,y1:11,x2:14,y2:17}));
+  const IconSearch    = ({size=17}={}) => rc('svg', svgBase(size), rc('circle',{cx:11,cy:11,r:8}), rc('line',{x1:21,y1:21,x2:16.65,y2:16.65}));
+  const IconCamera    = ({size=17}={}) => rc('svg', svgBase(size), rc('path',{d:'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'}), rc('circle',{cx:12,cy:13,r:4}));
+  const IconImage     = ({size=17}={}) => rc('svg', svgBase(size), rc('rect',{x:3,y:3,width:18,height:18,rx:2,ry:2}), rc('circle',{cx:8.5,cy:8.5,r:1.5}), rc('polyline',{points:'21 15 16 10 5 21'}));
+  const IconList      = ({size=18}={}) => rc('svg', svgBase(size), rc('line',{x1:8,y1:6,x2:21,y2:6}), rc('line',{x1:8,y1:12,x2:21,y2:12}), rc('line',{x1:8,y1:18,x2:21,y2:18}), rc('line',{x1:3,y1:6,x2:3.01,y2:6}), rc('line',{x1:3,y1:12,x2:3.01,y2:12}), rc('line',{x1:3,y1:18,x2:3.01,y2:18}));
+  const IconCheckSq   = ({size=52}={}) => rc('svg', svgBase(size), rc('polyline',{points:'9 11 12 14 22 4'}), rc('path',{d:'M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'}));
+  const IconStar      = ({size=24}={}) => rc('svg', svgBase(size, {fill:'currentColor',stroke:'none'}), rc('polygon',{points:'12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'}));
+  const IconNote      = ({size=52}={}) => rc('svg', svgBase(size), rc('path',{d:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'}), rc('polyline',{points:'14 2 14 8 20 8'}), rc('line',{x1:16,y1:13,x2:8,y2:13}), rc('line',{x1:16,y1:17,x2:8,y2:17}), rc('polyline',{points:'10 9 9 9 8 9'}));
+  const IconCheck     = ({size=14}={}) => rc('svg', svgBase(size), rc('polyline',{points:'20 6 9 17 4 12'}));
+  const IconPlus      = ({size=20}={}) => rc('svg', svgBase(size), rc('line',{x1:12,y1:5,x2:12,y2:19}), rc('line',{x1:5,y1:12,x2:19,y2:12}));
+  const IconBroom     = ({size=14}={}) => rc('svg', svgBase(size), rc('path',{d:'M3 6h18'}), rc('path',{d:'M8 6V4h8v2'}), rc('path',{d:'M19 6l-1 14H6L5 6'}));
+  const IconX         = ({size=18}={}) => rc('svg', svgBase(size), rc('line',{x1:18,y1:6,x2:6,y2:18}), rc('line',{x1:6,y1:6,x2:18,y2:18}));
+  const IconChevL     = ({size=22}={}) => rc('svg', svgBase(size), rc('polyline',{points:'15 18 9 12 15 6'}));
+  const IconChevR     = ({size=22}={}) => rc('svg', svgBase(size), rc('polyline',{points:'9 18 15 12 9 6'}));
+  const IconRocket    = ({size=22}={}) => rc('svg', svgBase(size), rc('path',{d:'M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z'}), rc('path',{d:'M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z'}), rc('path',{d:'M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0'}), rc('path',{d:'M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5'}));
 
   // ── Palette options ──
   const COLORS = [
@@ -637,7 +658,7 @@
               className: 'icon-btn',
               onClick: () => setModal({ type: 'newList' }),
               title: 'New List'
-            }, '+')
+            }, React.createElement(IconPlus, {size:20}))
           )
         ),
         React.createElement('div', { className: 'header-subtitle' }, subtitle)
@@ -645,7 +666,7 @@
 
       // View tabs (only on lists view)
       view === 'lists' && React.createElement('div', { className: 'view-tabs' },
-        React.createElement('button', { className: 'tab-btn active' }, '📋 My Lists')
+        React.createElement('button', { className: 'tab-btn active' }, React.createElement(IconList, {size:16}), ' My Lists')
       ),
 
       // Content
@@ -674,10 +695,10 @@
       // FAB
       view === 'lists'
         ? React.createElement('button', { className: 'fab', onClick: () => setModal({ type: 'newList' }) },
-            React.createElement('span', null, '+'), 'New Checklist'
+            React.createElement(IconPlus, {size:22}), 'New Checklist'
           )
         : React.createElement('button', { className: 'fab', onClick: () => setModal({ type: 'newTask' }) },
-            React.createElement('span', null, '+'), 'Add Items'
+            React.createElement(IconPlus, {size:22}), 'Add Items'
           ),
 
       // Modals
@@ -710,7 +731,7 @@
   // ── Lists View ──
   function ListView({ lists, tasks, listProgress, COLORS, onOpen, onEdit, onDelete }) {
     if (!lists.length) return React.createElement('div', { className: 'empty-state' },
-      React.createElement('div', { className: 'empty-icon' }, '✅'),
+      React.createElement('div', { className: 'empty-icon' }, React.createElement(IconCheckSq, {size:56})),
       React.createElement('div', { className: 'empty-title' }, 'No checklists yet'),
       React.createElement('div', { className: 'empty-sub' }, 'Tap the + button below\nto create your first checklist')
     );
@@ -733,8 +754,8 @@
             React.createElement('div', { style: { display:'flex', alignItems:'center', gap:8 } },
               React.createElement(Ring, { pct, color }),
               React.createElement('div', { className: 'list-card-actions', onClick: e => e.stopPropagation() },
-                React.createElement('button', { className: 'icon-btn', onClick: () => onEdit(list), title: 'Edit' }, '✏️'),
-                React.createElement('button', { className: 'icon-btn danger', onClick: () => onDelete(list), title: 'Delete' }, '🗑️')
+                React.createElement('button', { className: 'icon-btn', onClick: () => onEdit(list), title: 'Edit' }, React.createElement(IconPencil, {size:18})),
+                React.createElement('button', { className: 'icon-btn danger', onClick: () => onDelete(list), title: 'Delete' }, React.createElement(IconTrash, {size:18}))
               )
             )
           ),
@@ -779,14 +800,14 @@
           className: 'clear-done-btn',
           onClick: onClearDone,
           title: 'Clear completed tasks'
-        }, '🧹 Clear done')
+        }, React.createElement(IconBroom, {size:14}), ' Clear done')
       ),
       allDone && React.createElement('div', { className: 'all-done-banner' },
-        React.createElement('span', { style: { fontSize: 22 } }, '🎉'),
+        React.createElement('span', { style: { fontSize: 22, display:'flex', alignItems:'center', color:'#00bfa5' } }, React.createElement(IconStar, {size:22})),
         ' All tasks completed!'
       ),
       React.createElement('div', { className: 'search-wrap' },
-        React.createElement('span', { className: 'search-icon' }, '🔍'),
+        React.createElement('span', { className: 'search-icon' }, React.createElement(IconSearch, {size:17})),
         React.createElement('input', {
           type: 'text', className: 'search-input', placeholder: 'Search tasks…',
           value: search, onChange: e => onSearch(e.target.value)
@@ -802,7 +823,7 @@
       ),
       tasks.length === 0
         ? React.createElement('div', { className: 'empty-state' },
-            React.createElement('div', { className: 'empty-icon' }, filter === 'done' ? '🎉' : '📝'),
+            React.createElement('div', { className: 'empty-icon' }, filter === 'done' ? React.createElement(IconStar, {size:56}) : React.createElement(IconNote, {size:56})),
             React.createElement('div', { className: 'empty-title' }, filter === 'done' ? 'Nothing done yet!' : 'All clear!'),
             React.createElement('div', { className: 'empty-sub' }, filter === 'all' ? 'Tap + to add your first task' : `No ${filter} tasks`)
           )
@@ -823,11 +844,11 @@
                     React.createElement('div', {
                       className: 'task-check' + (task.done ? ' checked' : ''),
                       onClick: () => onToggle(task.id)
-                    }, task.done ? '✓' : ''),
+                    }, task.done ? React.createElement(IconCheck, {size:15}) : ''),
                     React.createElement('div', { className: 'task-text' }, task.text),
                     React.createElement('div', { style: { display:'flex', gap:6 } },
-                      React.createElement('button', { className: 'icon-btn', onClick: () => onEdit(task) }, '✏️'),
-                      React.createElement('button', { className: 'icon-btn danger', onClick: () => onDelete(task) }, '🗑️')
+                      React.createElement('button', { className: 'icon-btn', onClick: () => onEdit(task) }, React.createElement(IconPencil, {size:18})),
+                      React.createElement('button', { className: 'icon-btn danger', onClick: () => onDelete(task) }, React.createElement(IconTrash, {size:18}))
                     )
                   ),
                   // Photo strip
@@ -870,7 +891,7 @@
       const isTask = modal.type === 'deleteTask';
       content = React.createElement('div', { className: 'modal delete-modal' },
         React.createElement('div', { className: 'modal-handle' }),
-        React.createElement('div', { className: 'delete-icon' }, '🗑️'),
+        React.createElement('div', { className: 'delete-icon' }, React.createElement(IconTrash, {size:40})),
         React.createElement('div', { className: 'delete-title' }, isTask ? 'Delete Task?' : 'Delete List?'),
         React.createElement('div', { className: 'delete-sub' },
           isTask
@@ -922,7 +943,7 @@
               key: c.id, className: 'color-dot' + (color === c.id ? ' selected' : ''),
               style: { background: c.val },
               onClick: () => setColor(c.id)
-            }, color === c.id ? React.createElement('span', { style: { color:'white', fontSize:14, fontWeight:700, textShadow:'0 1px 3px rgba(0,0,0,0.4)' } }, '✓') : null)
+            }, color === c.id ? React.createElement('span', { style: { color:'white', display:'flex', alignItems:'center', justifyContent:'center' } }, React.createElement(IconCheck, {size:14})) : null)
           )
         )
       ),
@@ -980,11 +1001,11 @@
           React.createElement('button', {
             className: 'photo-add-btn',
             onClick: () => cameraRef.current.click()
-          }, '📷 Camera'),
+          }, React.createElement(IconCamera, {size:17}), ' Camera'),
           React.createElement('button', {
             className: 'photo-add-btn',
             onClick: () => galleryRef.current.click()
-          }, '🖼️ Gallery'),
+          }, React.createElement(IconImage, {size:17}), ' Gallery'),
           // hidden inputs
           React.createElement('input', {
             ref: cameraRef, type: 'file', accept: 'image/*',
@@ -1037,15 +1058,15 @@
         src: photos[idx], alt: '',
         onClick: e => e.stopPropagation()
       }),
-      React.createElement('button', { className: 'lightbox-close', onClick: onClose }, '✕'),
+      React.createElement('button', { className: 'lightbox-close', onClick: onClose }, React.createElement(IconX, {size:20})),
       photos.length > 1 && React.createElement('button', {
         className: 'lightbox-nav prev',
         onClick: (e) => { e.stopPropagation(); prev(); }
-      }, '‹'),
+      }, React.createElement(IconChevL, {size:22})),
       photos.length > 1 && React.createElement('button', {
         className: 'lightbox-nav next',
         onClick: (e) => { e.stopPropagation(); next(); }
-      }, '›'),
+      }, React.createElement(IconChevR, {size:22})),
       photos.length > 1 && React.createElement('div', {
         style: { position:'absolute', bottom:24, left:'50%', transform:'translateX(-50%)',
           color:'rgba(255,255,255,0.7)', fontSize:13, fontWeight:600 }
