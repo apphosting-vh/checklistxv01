@@ -66,9 +66,9 @@
       flex-shrink: 0;
     }
     .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-    .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.5px; }
+    .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -0.5px; }
     .logo span { color: var(--accent); }
-    .header-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 300; letter-spacing: 0.3px; }
+    .header-subtitle { font-size: 14px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.3px; }
 
     /* View Tabs */
     .view-tabs {
@@ -76,12 +76,12 @@
       flex-shrink: 0;
     }
     .tab-btn {
-      flex: 1; padding: 13px 10px; min-height: 48px; border: none; border-radius: var(--radius-sm);
-      font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 600;
+      flex: 1; padding: 14px 10px; min-height: 52px; border: none; border-radius: var(--radius-sm);
+      font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 700;
       cursor: pointer; transition: all 0.2s ease; background: var(--card);
       color: var(--text-muted); letter-spacing: 0.1px; box-shadow: var(--shadow);
     }
-    .tab-btn.active { background: linear-gradient(135deg, #7c4dff 0%, #e040fb 100%); color: white; font-weight: 700; box-shadow: 0 4px 14px rgba(124,77,255,0.35); }
+    .tab-btn.active { background: linear-gradient(135deg, #7c4dff 0%, #e040fb 100%); color: white; font-weight: 800; box-shadow: 0 4px 14px rgba(124,77,255,0.35); }
     .tab-btn:active { transform: scale(0.97); }
 
     /* Stats bar */
@@ -104,11 +104,11 @@
     }
 
     /* ── LISTS VIEW ── */
-    .lists-grid { display: flex; flex-direction: column; gap: 12px; }
+    .lists-grid { display: flex; flex-direction: column; gap: 14px; }
 
     .list-card {
       background: var(--card); border-radius: var(--radius);
-      padding: 18px 20px; cursor: pointer;
+      padding: 20px 22px; cursor: pointer;
       border: 1px solid var(--border);
       transition: all 0.2s ease;
       position: relative; overflow: hidden;
@@ -121,10 +121,10 @@
     .list-card:active { transform: scale(0.98); background: var(--card-hover); }
 
     .list-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .list-card-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 17px; line-height: 1.2; flex: 1; }
+    .list-card-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 20px; line-height: 1.2; flex: 1; }
     .list-card-actions { display: flex; gap: 8px; }
     .icon-btn {
-      width: 44px; height: 44px; border-radius: 50%; border: none;
+      width: 46px; height: 46px; border-radius: 50%; border: none;
       background: rgba(108,63,255,0.08); color: var(--text-muted);
       cursor: pointer; display: flex; align-items: center; justify-content: center;
       transition: all 0.18s ease; font-size: 18px; flex-shrink: 0;
@@ -137,7 +137,7 @@
     .progress-bar { flex: 1; height: 4px; background: rgba(108,63,255,0.1); border-radius: 4px; overflow: hidden; }
     .progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
     .progress-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; font-weight: 500; }
-    .task-count { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+    .task-count { font-size: 13px; color: var(--text-muted); margin-top: 8px; font-weight: 600; }
 
     /* Empty state */
     .empty-state {
@@ -145,8 +145,8 @@
       animation: fadeUp 0.4s ease both;
     }
     .empty-icon { margin-bottom: 16px; opacity: 0.6; display: flex; justify-content: center; align-items: center; }
-    .empty-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 20px; margin-bottom: 8px; }
-    .empty-sub { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+    .empty-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 8px; }
+    .empty-sub { font-size: 15px; color: var(--text-muted); line-height: 1.5; font-weight: 500; }
 
     /* ── TASKS VIEW ── */
     .tasks-header {
@@ -164,25 +164,25 @@
     .back-btn:hover { background: #2d2260; box-shadow: 0 4px 16px rgba(26,19,64,0.30); }
     .back-btn:active { transform: scale(0.93); box-shadow: 0 2px 8px rgba(26,19,64,0.18); }
     .tasks-header-text { flex: 1; }
-    .tasks-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 22px; line-height: 1.1; }
-    .tasks-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+    .tasks-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 25px; line-height: 1.1; }
+    .tasks-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 2px; font-weight: 600; }
 
     .task-filters { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
     .filter-pill {
-      padding: 11px 20px; border-radius: 50px; border: 1.5px solid var(--border);
-      font-size: 14px; font-weight: 600; cursor: pointer; background: var(--card);
+      padding: 12px 22px; border-radius: 50px; border: 1.5px solid var(--border);
+      font-size: 15px; font-weight: 700; cursor: pointer; background: var(--card);
       color: var(--text-muted); transition: all 0.2s; font-family: 'Nunito', sans-serif;
-      min-height: 44px; display: inline-flex; align-items: center;
+      min-height: 48px; display: inline-flex; align-items: center;
     }
     .filter-pill.active { background: linear-gradient(135deg,#ede7ff,#fce4ff); border-color: #7c4dff; color: #7c4dff; font-weight: 600; }
     .filter-pill:active { transform: scale(0.95); }
 
-    .tasks-list { display: flex; flex-direction: column; gap: 8px; }
+    .tasks-list { display: flex; flex-direction: column; gap: 10px; }
 
     .task-item {
       display: flex; flex-direction: column;
       background: var(--card); border-radius: var(--radius-sm);
-      padding: 14px 14px 14px 16px;
+      padding: 16px 16px 16px 18px;
       border: 1px solid var(--border);
       transition: all 0.2s ease;
       animation: fadeUp 0.25s ease both;
@@ -217,8 +217,8 @@
     .photo-add-btn {
       flex: 1; padding: 12px 8px; min-height: 46px; border-radius: var(--radius-sm);
       border: 1.5px dashed rgba(108,63,255,0.30); background: rgba(108,63,255,0.04);
-      color: var(--accent); font-family: 'Nunito', sans-serif; font-size: 14px;
-      font-weight: 600; cursor: pointer; display: flex; align-items: center;
+      color: var(--accent); font-family: 'Nunito', sans-serif; font-size: 15px;
+      font-weight: 700; cursor: pointer; display: flex; align-items: center;
       justify-content: center; gap: 6px; transition: all 0.2s;
     }
     .photo-add-btn:hover { background: rgba(108,63,255,0.09); border-style: solid; }
@@ -271,7 +271,7 @@
     .clear-done-btn {
       padding: 8px 14px; border-radius: 50px; border: 1.5px solid rgba(255,92,138,0.30);
       background: rgba(255,92,138,0.08); color: #c0005a;
-      font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+      font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700;
       cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
     }
     .clear-done-btn:hover { background: rgba(255,92,138,0.16); }
@@ -282,21 +282,21 @@
       margin: 0 0 12px; padding: 12px 18px; border-radius: var(--radius-sm);
       background: linear-gradient(135deg, #d6f5f0, #e8f5e9);
       border: 1px solid rgba(0,191,165,0.25);
-      color: #007a6a; font-weight: 700; font-size: 15px;
+      color: #007a6a; font-weight: 800; font-size: 16px;
       display: flex; align-items: center; gap: 8px;
       animation: fadeUp 0.3s ease both;
     }
     .task-item:active { transform: scale(0.99); }
 
     .task-check {
-      width: 28px; height: 28px; border-radius: 9px; flex-shrink: 0;
-      border: 2px solid rgba(108,63,255,0.25);
+      width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+      border: 2.5px solid rgba(108,63,255,0.25);
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; transition: all 0.2s; font-size: 15px; font-weight: 700;
     }
     .task-check.checked { border-color: var(--accent3); background: var(--accent3); color: #fff; }
 
-    .task-text { flex: 1; font-size: 16px; line-height: 1.45; }
+    .task-text { flex: 1; font-size: 17px; line-height: 1.45; font-weight: 600; }
 
     
 
@@ -308,8 +308,8 @@
       width: calc(100% - 48px);
       background: linear-gradient(135deg, #7c4dff 0%, #e040fb 100%);
       color: white; border: none; border-radius: 50px;
-      padding: 18px 32px;
-      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 17px;
+      padding: 20px 32px;
+      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 18px;
       letter-spacing: 0.4px;
       cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
       box-shadow: 0 6px 28px rgba(124,77,255,0.42), 0 2px 8px rgba(0,0,0,0.08);
@@ -334,7 +334,7 @@
       max-height: 90vh; overflow-y: auto;
     }
     .modal-handle { display: none; }
-    .modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 20px; }
+    .modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 20px; }
 
     /* Form elements */
     .form-group { margin-bottom: 16px; }
@@ -342,7 +342,7 @@
     .form-input {
       width: 100%; padding: 14px 16px; border-radius: var(--radius-sm);
       border: 1px solid var(--border); background: var(--card);
-      color: var(--text); font-family: 'Nunito', sans-serif; font-size: 15px;
+      color: var(--text); font-family: 'Nunito', sans-serif; font-size: 16px;
       outline: none; transition: border-color 0.2s;
     }
     .form-input:focus { border-color: var(--accent); }
@@ -361,18 +361,18 @@
 
     .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
     .btn-cancel {
-      flex: 1; padding: 12px 14px; min-height: 46px; border-radius: 50px;
+      flex: 1; padding: 14px 14px; min-height: 50px; border-radius: 50px;
       border: 1.5px solid rgba(108,63,255,0.20);
       background: transparent; color: var(--text-muted);
-      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; font-size: 15px;
+      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 16px;
       cursor: pointer; transition: all 0.2s; letter-spacing: 0.1px;
     }
     .btn-cancel:hover { background: rgba(108,63,255,0.06); color: var(--text); }
     .btn-confirm {
-      flex: 1; padding: 12px 14px; min-height: 46px; border-radius: 50px; border: none;
+      flex: 1; padding: 14px 14px; min-height: 50px; border-radius: 50px; border: none;
       background: linear-gradient(135deg, #7c4dff 0%, #e040fb 100%);
       color: white; font-family: 'Plus Jakarta Sans', sans-serif;
-      font-weight: 700; font-size: 15px; cursor: pointer; transition: all 0.2s;
+      font-weight: 800; font-size: 16px; cursor: pointer; transition: all 0.2s;
       box-shadow: 0 4px 18px rgba(124,77,255,0.30); letter-spacing: 0.2px;
     }
     .btn-confirm:hover { box-shadow: 0 6px 24px rgba(124,77,255,0.45); }
@@ -381,8 +381,8 @@
     /* Delete confirm modal */
     .delete-modal { text-align: center; }
     .delete-icon { margin-bottom: 12px; display: flex; justify-content: center; align-items: center; }
-    .delete-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 20px; margin-bottom: 8px; }
-    .delete-sub { color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 24px; }
+    .delete-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 8px; }
+    .delete-sub { color: var(--text-muted); font-size: 15px; line-height: 1.5; margin-bottom: 24px; font-weight: 500; }
 
     /* Animations */
     @keyframes fadeUp {
@@ -409,7 +409,7 @@
     .search-input {
       width: 100%; padding: 12px 16px 12px 40px; border-radius: var(--radius-sm);
       border: 1px solid var(--border); background: var(--card);
-      color: var(--text); font-family: 'Nunito', sans-serif; font-size: 14px;
+      color: var(--text); font-family: 'Nunito', sans-serif; font-size: 15px;
       outline: none; transition: border-color 0.2s;
     }
     .search-input:focus { border-color: var(--accent); }
