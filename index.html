@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#6c3fff" />
+  <meta name="theme-color" content="#6c3fff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0f0d1a" media="(prefers-color-scheme: dark)" />
   <meta name="description" content="CheckMate – A beautiful mobile checklist app" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -15,7 +16,6 @@
       var redirect = sessionStorage.getItem('spa_redirect');
       if (redirect) {
         sessionStorage.removeItem('spa_redirect');
-        // Replace state so back button works correctly
         window.history.replaceState(null, null, redirect);
       }
     })();
@@ -28,83 +28,114 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
+      color-scheme: light dark;
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
       --bg: #eef1ff;
       --surface: #ffffff;
       --surface2: #ffffff;
       --card: #ffffff;
       --card-hover: #f3f0ff;
+      --done-bg: #f0f0f4;
       --accent: #6c3fff;
       --accent2: #ff5c8a;
       --accent3: #00bfa5;
       --accent4: #ff8c00;
       --text: #1a1340;
-      --text-muted: #8080aa;
-      --border: rgba(108,63,255,0.12);
+      --text-muted: #66668c;
+      --border: rgba(108,63,255,0.14);
       --shadow: 0 4px 24px rgba(108,63,255,0.10);
       --radius: 18px;
       --radius-sm: 10px;
     }
 
-    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; overflow: hidden; }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f0d1a;
+        --surface: #1a1730;
+        --surface2: #221e3a;
+        --card: #1e1a33;
+        --card-hover: #292349;
+        --done-bg: #15122a;
+        --text: #ece9ff;
+        --text-muted: #9d9ac4;
+        --border: rgba(140,110,255,0.20);
+        --shadow: 0 4px 24px rgba(0,0,0,0.45);
+      }
+    }
+
+    html, body {
+      height: 100%; background: var(--bg); color: var(--text);
+      font-family: 'Nunito', sans-serif; overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+    }
+
+    button, [role="button"], .color-dot, .priority-btn, .filter-pill, .task-check, .icon-btn, .tab-btn {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
 
     #root { height: 100%; display: flex; flex-direction: column; }
 
-    /* Scrollbar */
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(108,63,255,0.18); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: rgba(108,63,255,0.28); border-radius: 4px; }
 
-    /* App Shell */
     .app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; max-width: 480px; margin: 0 auto; position: relative; overflow: hidden; }
 
     /* Header */
     .header {
-      padding: 52px 24px 20px;
+      padding: calc(var(--sat) + 24px) 24px 18px;
       background: linear-gradient(180deg, var(--surface) 0%, rgba(238,241,255,0) 100%);
       position: relative;
       z-index: 10;
       flex-shrink: 0;
+      transition: padding 0.22s ease;
+    }
+    .header.collapsed { padding-bottom: 10px; }
+    .header.collapsed .header-subtitle { display: none; }
+    .header.collapsed .logo { font-size: 24px; }
+    @media (prefers-color-scheme: dark) {
+      .header { background: linear-gradient(180deg, var(--surface) 0%, rgba(15,13,26,0) 100%); }
     }
     .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
     .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -0.5px; }
     .logo span { color: var(--accent); }
     .header-subtitle { font-size: 14px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.3px; }
 
-    /* View Tabs */
-    .view-tabs {
-      display: flex; gap: 6px; padding: 12px 24px 0;
-      flex-shrink: 0;
-    }
-    .tab-btn {
-      flex: 1; padding: 14px 10px; min-height: 52px; border: none; border-radius: var(--radius-sm);
-      font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 700;
-      cursor: pointer; transition: all 0.2s ease; background: var(--card);
-      color: var(--text-muted); letter-spacing: 0.1px; box-shadow: var(--shadow);
-    }
-    .tab-btn.active { background: linear-gradient(135deg, #7c4dff 0%, #e040fb 100%); color: white; font-weight: 800; box-shadow: 0 4px 14px rgba(124,77,255,0.35); }
-    .tab-btn:active { transform: scale(0.97); }
-
-    /* Stats bar */
-    .stats-bar {
-      display: flex; gap: 12px; padding: 14px 24px 0;
-      flex-shrink: 0;
-    }
-    .stat-chip {
-      display: flex; align-items: center; gap: 6px;
-      padding: 6px 12px; border-radius: 20px;
-      background: var(--card); font-size: 12px; color: var(--text-muted);
-    }
-    .stat-chip .dot { width: 7px; height: 7px; border-radius: 50%; }
-    .stat-chip .num { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 13px; color: var(--text); }
-
     /* Content area */
     .content {
-      flex: 1; overflow-y: auto; padding: 16px 24px 120px;
+      flex: 1; overflow-y: auto; padding: 18px 24px 130px;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    /* Error banner */
+    .error-banner {
+      margin: 0 0 14px; padding: 13px 16px; border-radius: 14px;
+      background: rgba(255,23,68,0.10); border: 1px solid rgba(255,23,68,0.25);
+      color: #b00020; font-weight: 700; font-size: 14px;
+      display: flex; align-items: center; gap: 10px;
+      animation: fadeUp 0.3s ease both;
+    }
+    @media (prefers-color-scheme: dark) { .error-banner { color: #ff8fa3; } }
+    .error-banner button {
+      margin-left: auto; border: none; background: transparent; color: inherit;
+      font-weight: 800; font-size: 13px; cursor: pointer; text-decoration: underline;
     }
 
     /* ── LISTS VIEW ── */
     .lists-grid { display: flex; flex-direction: column; gap: 14px; }
+    .category-heading {
+      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 12px;
+      letter-spacing: 0.9px; text-transform: uppercase; color: var(--text-muted);
+      margin: 10px 2px 0;
+    }
+    .category-heading:first-child { margin-top: 0; }
 
     .list-card {
       background: var(--card); border-radius: var(--radius);
@@ -113,10 +144,6 @@
       transition: all 0.2s ease;
       position: relative; overflow: hidden;
       animation: fadeUp 0.3s ease both;
-    }
-    .list-card::before {
-      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-      width: 4px; border-radius: 4px 0 0 4px;
     }
     .list-card:active { transform: scale(0.98); background: var(--card-hover); }
 
@@ -129,152 +156,179 @@
       cursor: pointer; display: flex; align-items: center; justify-content: center;
       transition: all 0.18s ease; font-size: 18px; flex-shrink: 0;
     }
-    .icon-btn:hover { background: linear-gradient(135deg,#ede7ff,#fce4ec); color: #7c4dff; transform: scale(1.1); }
+    .icon-btn:hover { background: linear-gradient(135deg,#ede7ff,#fce4ec); color: #7c4dff; transform: scale(1.08); }
     .icon-btn.danger:hover { background: linear-gradient(135deg,#fce4ec,#fff3e0); color: #e53935; }
-    .icon-btn:active { transform: scale(0.88); }
+    .icon-btn:active { transform: scale(0.9); }
+    .icon-btn:focus-visible, button:focus-visible, .color-dot:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+      outline: 3px solid rgba(108,63,255,0.55); outline-offset: 2px;
+    }
 
     .list-card-meta { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
-    .progress-bar { flex: 1; height: 4px; background: rgba(108,63,255,0.1); border-radius: 4px; overflow: hidden; }
+    .progress-bar { flex: 1; height: 4px; background: rgba(108,63,255,0.12); border-radius: 4px; overflow: hidden; }
     .progress-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
-    .progress-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; font-weight: 500; }
+    .progress-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; font-weight: 600; }
     .task-count { font-size: 13px; color: var(--text-muted); margin-top: 8px; font-weight: 600; }
 
     /* Empty state */
-    .empty-state {
-      text-align: center; padding: 60px 20px;
-      animation: fadeUp 0.4s ease both;
-    }
+    .empty-state { text-align: center; padding: 60px 20px; animation: fadeUp 0.4s ease both; }
     .empty-icon { margin-bottom: 16px; opacity: 0.6; display: flex; justify-content: center; align-items: center; }
     .empty-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 8px; }
-    .empty-sub { font-size: 15px; color: var(--text-muted); line-height: 1.5; font-weight: 500; }
+    .empty-sub { font-size: 15px; color: var(--text-muted); line-height: 1.5; font-weight: 500; white-space: pre-line; }
 
     /* ── TASKS VIEW ── */
-    .tasks-header {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
-    }
+    .tasks-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
     .back-btn {
       height: 44px; padding: 0 18px; border-radius: 50px; border: none;
-      background: #1a1340;
-      color: #ffffff; cursor: pointer;
+      background: #1a1340; color: #ffffff; cursor: pointer;
       display: flex; align-items: center; justify-content: center; gap: 6px;
       font-size: 18px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;
       transition: all 0.18s ease; flex-shrink: 0; white-space: nowrap;
       box-shadow: 0 3px 12px rgba(26,19,64,0.22);
     }
-    .back-btn:hover { background: #2d2260; box-shadow: 0 4px 16px rgba(26,19,64,0.30); }
-    .back-btn:active { transform: scale(0.93); box-shadow: 0 2px 8px rgba(26,19,64,0.18); }
-    .tasks-header-text { flex: 1; }
-    .tasks-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 25px; line-height: 1.1; }
+    .back-btn:hover { background: #2d2260; }
+    .back-btn:active { transform: scale(0.93); }
+    .tasks-header-text { flex: 1; min-width: 0; }
+    .tasks-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 25px; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .tasks-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 2px; font-weight: 600; }
+    .header-icon {
+      width: 44px; height: 44px; border-radius: 50%; border: none; flex-shrink: 0;
+      background: var(--card); color: var(--text-muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow); transition: all 0.18s ease;
+    }
+    .header-icon:hover { color: var(--accent); transform: scale(1.06); }
+    .header-icon:active { transform: scale(0.9); }
+    .select-count {
+      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 18px;
+      color: var(--accent); flex-shrink: 0;
+    }
 
-    .task-filters { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+    .task-filters { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
     .filter-pill {
-      padding: 12px 22px; border-radius: 50px; border: 1.5px solid var(--border);
+      padding: 12px 20px; border-radius: 50px; border: 1.5px solid var(--border);
       font-size: 15px; font-weight: 700; cursor: pointer; background: var(--card);
       color: var(--text-muted); transition: all 0.2s; font-family: 'Nunito', sans-serif;
       min-height: 48px; display: inline-flex; align-items: center;
     }
-    .filter-pill.active { background: linear-gradient(135deg,#ede7ff,#fce4ff); border-color: #7c4dff; color: #7c4dff; font-weight: 600; }
+    .filter-pill.active { background: linear-gradient(135deg,#ede7ff,#fce4ff); border-color: #7c4dff; color: #7c4dff; }
+    @media (prefers-color-scheme: dark) { .filter-pill.active { background: rgba(124,77,255,0.22); color: #c9b6ff; border-color: #7c4dff; } }
     .filter-pill:active { transform: scale(0.95); }
+    .filters-spacer { flex: 1; }
+    .select-toggle {
+      margin-left: auto; padding: 12px 16px; border-radius: 50px; border: none;
+      background: var(--card); color: var(--accent); font-weight: 800; font-size: 14px;
+      font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; min-height: 48px;
+      display: inline-flex; align-items: center; gap: 6px; box-shadow: var(--shadow);
+    }
+    .select-toggle:active { transform: scale(0.95); }
+
+    /* Quick add */
+    .quick-add { display: flex; gap: 8px; margin-bottom: 14px; }
+    .quick-add input {
+      flex: 1; min-width: 0; padding: 14px 16px; border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border); background: var(--card); color: var(--text);
+      font-family: 'Nunito', sans-serif; font-size: 16px; outline: none; transition: border-color 0.2s;
+    }
+    .quick-add input:focus { border-color: var(--accent); }
+    .quick-add input::placeholder { color: var(--text-muted); }
+    .quick-add-btn {
+      width: 52px; flex-shrink: 0; border: none; border-radius: var(--radius-sm);
+      background: linear-gradient(135deg,#7c4dff,#e040fb); color: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+      box-shadow: 0 3px 12px rgba(124,77,255,0.3);
+    }
+    .quick-add-btn:active { transform: scale(0.94); }
+    .quick-add-detail {
+      width: 52px; flex-shrink: 0; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--card); color: var(--text-muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .quick-add-detail:hover { color: var(--accent); border-color: var(--accent); }
 
     .tasks-list { display: flex; flex-direction: column; gap: 10px; }
+
+    /* Swipe wrapper */
+    .task-swipe-wrap { position: relative; border-radius: var(--radius-sm); overflow: hidden; }
+    .task-swipe-bg {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-start; padding-left: 20px;
+      background: linear-gradient(135deg,#00bfa5,#00d4aa); color: #fff;
+    }
+    .task-swipe-bg.delete {
+      justify-content: flex-end; padding-left: 0; padding-right: 22px;
+      background: linear-gradient(135deg,#e53935,#ff5252);
+    }
 
     .task-item {
       display: flex; flex-direction: column;
       background: var(--card); border-radius: var(--radius-sm);
       padding: 16px 16px 16px 18px;
       border: 1px solid var(--border);
-      transition: all 0.2s ease;
-      animation: fadeUp 0.25s ease both;
-      position: relative;
+      transition: background 0.2s ease;
+      position: relative; user-select: none;
     }
-    .task-item-main { display: flex; align-items: center; gap: 12px; width: 100%; }
-    .task-item.done {
-      background: #f0f0f4;
-      border-color: rgba(0,0,0,0.05);
-      opacity: 1;
+    .task-item-main { display: flex; align-items: center; gap: 12px; width: 100%; touch-action: pan-y; }
+    .task-item.done { background: var(--done-bg); border-color: rgba(0,0,0,0.04); }
+    .task-item.done .task-text { color: var(--text-muted); }
+    .task-item.done .task-check.checked { background: var(--text-muted); border-color: var(--text-muted); }
+    .task-item.dragging { box-shadow: 0 12px 32px rgba(108,63,255,0.35); border-color: var(--accent); z-index: 5; opacity: 0.95; }
+
+    .task-body { flex: 1; min-width: 0; }
+    .task-text { font-size: 17px; line-height: 1.45; font-weight: 600; word-break: break-word; }
+    .task-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800;
+      padding: 3px 9px; border-radius: 20px; letter-spacing: 0.2px; white-space: nowrap;
     }
-    .task-item.done .task-text { color: #9090aa; }
-    .task-item.done .task-check.checked { background: #9090aa; border-color: #9090aa; }
+    .badge-due { background: rgba(108,63,255,0.12); color: #5a3fd4; }
+    .badge-due.overdue { background: rgba(255,23,68,0.14); color: #d50000; }
+    @media (prefers-color-scheme: dark) { .badge-due { color: #c9b6ff; } .badge-due.overdue { color: #ff8fa3; } }
+    .badge-pri-high { background: rgba(255,23,68,0.14); color: #d50000; }
+    .badge-pri-medium { background: rgba(255,140,0,0.16); color: #a85400; }
+    .badge-pri-low { background: rgba(74,158,255,0.16); color: #1f6fd0; }
+    @media (prefers-color-scheme: dark) {
+      .badge-pri-high { color: #ff8fa3; } .badge-pri-medium { color: #ffc078; } .badge-pri-low { color: #8ec2ff; }
+    }
 
     /* Photo strip on task card */
-    .task-photos {
-      display: flex; gap: 8px; overflow-x: auto; padding: 10px 0 2px 40px;
-      -webkit-overflow-scrolling: touch; scrollbar-width: none;
-    }
+    .task-photos { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0 2px 44px; -webkit-overflow-scrolling: touch; scrollbar-width: none; touch-action: pan-x pan-y; }
     .task-photos::-webkit-scrollbar { display: none; }
     .task-photo-thumb {
       width: 72px; height: 72px; border-radius: 10px; object-fit: cover;
       flex-shrink: 0; cursor: pointer; border: 2px solid rgba(108,63,255,0.15);
       transition: transform 0.18s ease, box-shadow 0.18s ease;
+      -webkit-touch-callout: none; user-select: none; -webkit-user-drag: none;
     }
     .task-photo-thumb:active { transform: scale(0.94); }
-    .task-photo-thumb:hover { box-shadow: 0 4px 14px rgba(108,63,255,0.22); transform: scale(1.04); }
 
-    /* Photo section in modal */
-    .photo-section { margin-bottom: 16px; }
-    .photo-add-row { display: flex; gap: 8px; margin-bottom: 10px; }
-    .photo-add-btn {
-      flex: 1; padding: 12px 8px; min-height: 46px; border-radius: var(--radius-sm);
-      border: 1.5px dashed rgba(108,63,255,0.30); background: rgba(108,63,255,0.04);
-      color: var(--accent); font-family: 'Nunito', sans-serif; font-size: 15px;
-      font-weight: 700; cursor: pointer; display: flex; align-items: center;
-      justify-content: center; gap: 6px; transition: all 0.2s;
+    /* Checkbox */
+    .task-check {
+      width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+      border: 2.5px solid rgba(108,63,255,0.35);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; font-size: 15px; font-weight: 700;
+      background: transparent; color: transparent; position: relative;
     }
-    .photo-add-btn:hover { background: rgba(108,63,255,0.09); border-style: solid; }
-    .photo-add-btn:active { transform: scale(0.97); }
-    .modal-photo-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
-    .modal-photo-strip::-webkit-scrollbar { display: none; }
-    .modal-photo-wrap { position: relative; flex-shrink: 0; }
-    .modal-photo-thumb {
-      width: 80px; height: 80px; border-radius: 10px; object-fit: cover;
-      border: 2px solid var(--border); display: block;
-    }
-    .modal-photo-remove {
-      position: absolute; top: -6px; right: -6px;
-      width: 22px; height: 22px; border-radius: 50%; border: none;
-      background: #ff1744; color: white; font-size: 13px; font-weight: 700;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 2px 6px rgba(255,23,68,0.4); line-height: 1;
-    }
+    .task-check::after { content: ''; position: absolute; inset: -6px; border-radius: 14px; }
+    .task-check.checked { border-color: var(--accent3); background: var(--accent3); color: #fff; }
+    .task-check.select { border-radius: 50%; border-color: rgba(108,63,255,0.35); }
 
-    /* Lightbox */
-    .lightbox {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.92);
-      z-index: 200; display: flex; align-items: center; justify-content: center;
-      animation: fadeIn 0.18s ease;
+    /* Drag handle */
+    .drag-handle {
+      width: 40px; height: 40px; flex-shrink: 0; border: none; background: transparent;
+      color: var(--text-muted); cursor: grab; display: flex; align-items: center; justify-content: center;
+      touch-action: none; border-radius: 10px;
     }
-    .lightbox img {
-      max-width: 96vw; max-height: 88vh; border-radius: 12px;
-      object-fit: contain; box-shadow: 0 8px 48px rgba(0,0,0,0.6);
-    }
-    .lightbox-close {
-      position: absolute; top: 20px; right: 20px;
-      width: 44px; height: 44px; border-radius: 50%; border: none;
-      background: rgba(255,255,255,0.15); color: white; font-size: 22px;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      backdrop-filter: blur(4px); transition: background 0.2s;
-    }
-    .lightbox-close:hover { background: rgba(255,255,255,0.25); }
-    .lightbox-nav {
-      position: absolute; top: 50%; transform: translateY(-50%);
-      width: 44px; height: 44px; border-radius: 50%; border: none;
-      background: rgba(255,255,255,0.15); color: white; font-size: 22px;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      backdrop-filter: blur(4px); transition: background 0.2s;
-    }
-    .lightbox-nav:hover { background: rgba(255,255,255,0.28); }
-    .lightbox-nav.prev { left: 16px; }
-    .lightbox-nav.next { right: 16px; }
+    .drag-handle:active { cursor: grabbing; color: var(--accent); }
 
     /* Clear done button */
     .clear-done-btn {
-      padding: 8px 14px; border-radius: 50px; border: 1.5px solid rgba(255,92,138,0.30);
-      background: rgba(255,92,138,0.08); color: #c0005a;
+      padding: 10px 15px; border-radius: 50px; border: 1.5px solid rgba(255,92,138,0.35);
+      background: rgba(255,92,138,0.08); color: #c0005a; min-height: 44px;
       font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700;
       cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+      display: inline-flex; align-items: center;
     }
-    .clear-done-btn:hover { background: rgba(255,92,138,0.16); }
+    @media (prefers-color-scheme: dark) { .clear-done-btn { color: #ff8fb0; } }
     .clear-done-btn:active { transform: scale(0.95); }
 
     /* All-done celebration banner */
@@ -286,23 +340,13 @@
       display: flex; align-items: center; gap: 8px;
       animation: fadeUp 0.3s ease both;
     }
-    .task-item:active { transform: scale(0.99); }
-
-    .task-check {
-      width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
-      border: 2.5px solid rgba(108,63,255,0.25);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: all 0.2s; font-size: 15px; font-weight: 700;
+    @media (prefers-color-scheme: dark) {
+      .all-done-banner { background: linear-gradient(135deg, rgba(0,191,165,0.18), rgba(0,191,165,0.08)); color: #6ff0dd; }
     }
-    .task-check.checked { border-color: var(--accent3); background: var(--accent3); color: #fff; }
-
-    .task-text { flex: 1; font-size: 17px; line-height: 1.45; font-weight: 600; }
-
-    
 
     /* FAB */
     .fab {
-      position: fixed; bottom: 28px; right: 50%;
+      position: fixed; bottom: calc(28px + var(--sab)); right: 50%;
       transform: translateX(50%);
       max-width: calc(480px - 48px);
       width: calc(100% - 48px);
@@ -313,125 +357,226 @@
       letter-spacing: 0.4px;
       cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
       box-shadow: 0 6px 28px rgba(124,77,255,0.42), 0 2px 8px rgba(0,0,0,0.08);
-      transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1); z-index: 50;
+      transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s ease; z-index: 50;
     }
-    .fab:active { transform: translateX(50%) scale(0.96); box-shadow: 0 3px 14px rgba(124,77,255,0.28); }
+    .fab:active { transform: translateX(50%) scale(0.96); }
+    .fab.hidden { transform: translateX(50%) translateY(220%); opacity: 0; pointer-events: none; }
+
+    /* PWA install prompt */
+    .install-bar {
+      position: fixed; bottom: calc(96px + var(--sab)); left: 50%; transform: translateX(-50%);
+      max-width: calc(480px - 32px); width: calc(100% - 32px);
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 12px 14px; display: flex; align-items: center; gap: 12px;
+      z-index: 60; box-shadow: var(--shadow);
+      animation: fadeUp 0.3s ease both;
+    }
+    .install-bar-text { flex: 1; min-width: 0; }
+    .install-bar-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 14px; }
+    .install-bar-sub { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+    .install-bar-btn {
+      padding: 9px 16px; border-radius: 50px; border: none; flex-shrink: 0;
+      background: linear-gradient(135deg, #7c4dff, #e040fb); color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 13px;
+      cursor: pointer; min-height: 40px;
+    }
+    .install-bar-btn:active { transform: scale(0.95); }
+    .install-bar-x {
+      width: 32px; height: 32px; border-radius: 50%; border: none; flex-shrink: 0;
+      background: transparent; color: var(--text-muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .install-bar-x:hover { background: var(--card-hover); }
+
+    /* Snackbar / undo toast */
+    .snackbar {
+      position: fixed; bottom: calc(104px + var(--sab)); left: 50%; transform: translateX(-50%);
+      max-width: calc(480px - 32px); width: calc(100% - 32px);
+      background: #1a1340; color: #fff; border-radius: 14px;
+      padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+      z-index: 300; box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      animation: fadeUp 0.25s ease both;
+    }
+    .snackbar-msg { flex: 1; font-size: 14px; font-weight: 600; }
+    .snackbar-undo {
+      border: none; background: transparent; color: #c6a8ff; cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 14px;
+      padding: 8px 10px; border-radius: 8px;
+    }
+    .snackbar-undo:hover { background: rgba(255,255,255,0.1); }
 
     /* Modal Overlay */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(26,19,64,0.5);
       backdrop-filter: blur(8px); z-index: 100;
       display: flex; align-items: center; justify-content: center;
-      animation: fadeIn 0.2s ease;
-      padding: 24px;
+      animation: fadeIn 0.2s ease; padding: 24px;
     }
     .modal {
       background: var(--surface2); width: 100%; max-width: 420px;
-      border-radius: 24px; padding: 28px 24px 28px;
+      border-radius: 24px; padding: 28px 24px;
       animation: scaleIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
       border: 1px solid var(--border);
       box-shadow: 0 24px 64px rgba(26,19,64,0.18), 0 4px 16px rgba(108,63,255,0.10);
       max-height: 90vh; overflow-y: auto;
     }
     .modal-handle { display: none; }
+    .modal-handle-hit { display: none; }
     .modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 20px; }
 
     /* Form elements */
     .form-group { margin-bottom: 16px; }
-    .form-label { font-size: 12px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 8px; display: block; }
+    .form-label { font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 8px; display: block; }
     .form-input {
       width: 100%; padding: 14px 16px; border-radius: var(--radius-sm);
-      border: 1px solid var(--border); background: var(--card);
+      border: 1.5px solid var(--border); background: var(--card);
       color: var(--text); font-family: 'Nunito', sans-serif; font-size: 16px;
-      outline: none; transition: border-color 0.2s;
+      outline: none; transition: border-color 0.2s; -webkit-appearance: none; appearance: none;
     }
     .form-input:focus { border-color: var(--accent); }
     .form-input::placeholder { color: var(--text-muted); }
     textarea.form-input { resize: none; min-height: 80px; line-height: 1.5; }
+    .form-hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; font-weight: 600; }
 
     .color-picker { display: flex; gap: 10px; flex-wrap: wrap; }
     .color-dot {
-      width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+      width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
       transition: all 0.2s; border: 3px solid transparent;
-      display: flex; align-items: center; justify-content: center;
+      display: flex; align-items: center; justify-content: center; padding: 0;
     }
-    .color-dot.selected { border-color: #1a1340; transform: scale(1.15); }
+    .color-dot.selected { border-color: var(--text); transform: scale(1.1); }
 
-    
+    .priority-picker { display: flex; gap: 8px; }
+    .priority-btn {
+      flex: 1; min-height: 46px; border-radius: var(--radius-sm); cursor: pointer;
+      border: 1.5px solid var(--border); background: var(--card); color: var(--text-muted);
+      font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 14px; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .priority-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(108,63,255,0.10); }
+
+    /* Photo section in modal */
+    .photo-section { margin-bottom: 16px; }
+    .photo-add-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .photo-add-btn {
+      flex: 1; padding: 12px 8px; min-height: 46px; border-radius: var(--radius-sm);
+      border: 1.5px dashed rgba(108,63,255,0.30); background: rgba(108,63,255,0.04);
+      color: var(--accent); font-family: 'Nunito', sans-serif; font-size: 15px;
+      font-weight: 700; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 6px; transition: all 0.2s;
+    }
+    .photo-add-btn:active { transform: scale(0.97); }
+    .modal-photo-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+    .modal-photo-strip::-webkit-scrollbar { display: none; }
+    .modal-photo-wrap { position: relative; flex-shrink: 0; }
+    .modal-photo-thumb { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; border: 2px solid var(--border); display: block; }
+    .modal-photo-remove {
+      position: absolute; top: -6px; right: -6px;
+      width: 26px; height: 26px; border-radius: 50%; border: none;
+      background: #ff1744; color: white; font-size: 14px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 6px rgba(255,23,68,0.4); line-height: 1;
+    }
+
+    /* Lightbox */
+    .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 200; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.18s ease; }
+    .lightbox img { max-width: 96vw; max-height: 88vh; border-radius: 12px; object-fit: contain; box-shadow: 0 8px 48px rgba(0,0,0,0.6); }
+    .lightbox-close {
+      position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.15); color: white; font-size: 22px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: background 0.2s;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,0.25); }
+    .lightbox-nav {
+      position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.15); color: white; font-size: 22px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: background 0.2s;
+    }
+    .lightbox-nav:hover { background: rgba(255,255,255,0.28); }
+    .lightbox-nav.prev { left: 16px; }
+    .lightbox-nav.next { right: 16px; }
 
     .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
     .btn-cancel {
-      flex: 1; padding: 14px 14px; min-height: 50px; border-radius: 50px;
-      border: 1.5px solid rgba(108,63,255,0.20);
-      background: transparent; color: var(--text-muted);
+      flex: 1; padding: 14px; min-height: 50px; border-radius: 50px;
+      border: 1.5px solid rgba(108,63,255,0.20); background: transparent; color: var(--text-muted);
       font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 16px;
-      cursor: pointer; transition: all 0.2s; letter-spacing: 0.1px;
+      cursor: pointer; transition: all 0.2s;
     }
     .btn-cancel:hover { background: rgba(108,63,255,0.06); color: var(--text); }
     .btn-confirm {
-      flex: 1; padding: 14px 14px; min-height: 50px; border-radius: 50px; border: none;
+      flex: 1; padding: 14px; min-height: 50px; border-radius: 50px; border: none;
       background: linear-gradient(135deg, #7c4dff 0%, #e040fb 100%);
-      color: white; font-family: 'Plus Jakarta Sans', sans-serif;
-      font-weight: 800; font-size: 16px; cursor: pointer; transition: all 0.2s;
-      box-shadow: 0 4px 18px rgba(124,77,255,0.30); letter-spacing: 0.2px;
+      color: white; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 16px;
+      cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 18px rgba(124,77,255,0.30);
     }
-    .btn-confirm:hover { box-shadow: 0 6px 24px rgba(124,77,255,0.45); }
-    .btn-cancel:active, .btn-confirm:active { transform: scale(0.97); }
+    .btn-confirm:disabled { opacity: 0.45; box-shadow: none; cursor: not-allowed; }
+    .btn-confirm.danger { background: linear-gradient(135deg,#ff1744,#ff6d00); box-shadow: 0 4px 18px rgba(255,23,68,0.35); }
+    .btn-cancel:active, .btn-confirm:active:not(:disabled) { transform: scale(0.97); }
+
+    /* Menu list (settings / list menu) */
+    .menu-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; }
+    .menu-item {
+      display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+      padding: 15px 16px; min-height: 56px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: var(--card); color: var(--text);
+      font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 16px;
+      cursor: pointer; transition: all 0.18s ease;
+    }
+    .menu-item:hover { background: var(--card-hover); }
+    .menu-item:active { transform: scale(0.98); }
+    .menu-item.danger { color: #e53935; }
+    .menu-item .menu-item-sub { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+    .menu-item > div { flex: 1; min-width: 0; }
 
     /* Delete confirm modal */
     .delete-modal { text-align: center; }
-    .delete-icon { margin-bottom: 12px; display: flex; justify-content: center; align-items: center; }
+    .delete-icon { margin-bottom: 12px; display: flex; justify-content: center; align-items: center; color: #e53935; }
     .delete-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 8px; }
     .delete-sub { color: var(--text-muted); font-size: 15px; line-height: 1.5; margin-bottom: 24px; font-weight: 500; }
 
-    /* Animations */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; } to { opacity: 1; }
-    }
-    @keyframes slideUp {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-    @keyframes scaleIn {
-      from { opacity: 0; transform: scale(0.92) translateY(8px); }
-      to   { opacity: 1; transform: scale(1)    translateY(0); }
-    }
+    /* Ring */
+    .ring-wrap { position: relative; width: 46px; height: 46px; flex-shrink: 0; }
+    .ring-wrap svg { transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: rgba(108,63,255,0.12); stroke-width: 3; }
+    .ring-fill { fill: none; stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset 0.4s ease, stroke 0.4s ease; }
+    .ring-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 11px; }
+    .done-badge { color: var(--accent3); display: flex; align-items: center; }
 
-    /* Swipe hint on tasks */
-    .swipe-hint { font-size: 11px; color: var(--text-muted); text-align: center; margin-bottom: 12px; opacity: 0.6; }
+    /* Animations */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.92) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+    .swipe-hint { font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 12px; font-weight: 600; }
 
     /* Search bar */
     .search-wrap { position: relative; margin-bottom: 14px; }
     .search-input {
-      width: 100%; padding: 12px 16px 12px 40px; border-radius: var(--radius-sm);
-      border: 1px solid var(--border); background: var(--card);
-      color: var(--text); font-family: 'Nunito', sans-serif; font-size: 15px;
+      width: 100%; padding: 13px 42px 13px 42px; border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border); background: var(--card);
+      color: var(--text); font-family: 'Nunito', sans-serif; font-size: 16px;
       outline: none; transition: border-color 0.2s;
     }
     .search-input:focus { border-color: var(--accent); }
     .search-input::placeholder { color: var(--text-muted); }
     .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; display: flex; align-items: center; }
-
-    /* Progress ring in list card top-right */
-    .ring-wrap { position: relative; width: 44px; height: 44px; flex-shrink: 0; }
-    .ring-wrap svg { transform: rotate(-90deg); }
-    .ring-bg { fill: none; stroke: rgba(108,63,255,0.10); stroke-width: 3; }
-    .ring-fill { fill: none; stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset 0.4s ease; }
-    .ring-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 11px; }
+    .search-clear {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      width: 32px; height: 32px; border-radius: 50%; border: none; background: transparent;
+      color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .search-clear:hover { background: rgba(108,63,255,0.1); color: var(--accent); }
+    .result-count { font-size: 12px; color: var(--text-muted); font-weight: 700; margin: -6px 2px 12px; }
 
     /* ── Update Toast ── */
     .update-toast {
       position: fixed; top: 0; left: 50%; transform: translateX(-50%) translateY(-110%);
       max-width: 480px; width: 100%;
-      background: #1a1340;
-      color: #fff;
+      background: #1a1340; color: #fff;
       display: flex; align-items: center; gap: 12px;
-      padding: 14px 18px;
-      z-index: 9999;
+      padding: calc(14px + var(--sat)) 18px 14px; z-index: 9999;
       transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
       box-shadow: 0 6px 32px rgba(26,19,64,0.35);
       border-bottom: 3px solid #7c4dff;
@@ -443,12 +588,10 @@
     .update-toast-sub { font-size: 12px; opacity: 0.7; font-family: 'Nunito', sans-serif; }
     .update-toast-btn {
       padding: 8px 16px; border-radius: 50px; border: none;
-      background: linear-gradient(135deg, #7c4dff, #e040fb);
-      color: white; font-family: 'Plus Jakarta Sans', sans-serif;
-      font-weight: 700; font-size: 13px; cursor: pointer;
-      white-space: nowrap; flex-shrink: 0;
-      box-shadow: 0 3px 12px rgba(124,77,255,0.4);
-      transition: all 0.2s;
+      background: linear-gradient(135deg, #7c4dff, #e040fb); color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 13px;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      box-shadow: 0 3px 12px rgba(124,77,255,0.4); transition: all 0.2s;
     }
     .update-toast-btn:active { transform: scale(0.95); }
     .update-dismiss {
@@ -458,6 +601,38 @@
       font-size: 16px; flex-shrink: 0; transition: all 0.2s;
     }
     .update-dismiss:hover { background: rgba(255,255,255,0.2); }
+
+    /* ── Mobile: bottom-sheet modals ── */
+    @media (max-width: 520px) {
+      .modal-overlay { align-items: flex-end; padding: 0; }
+      .modal {
+        max-width: none; border-radius: 24px 24px 0 0;
+        padding: 20px 22px calc(28px + env(safe-area-inset-bottom, 0px));
+        max-height: 92vh;
+        animation: slideUp 0.3s cubic-bezier(0.34, 1.28, 0.64, 1);
+      }
+      .modal-handle-hit {
+        display: flex; justify-content: center; align-items: center;
+        padding: 6px 0 14px; margin: -6px 0 0;
+        touch-action: none; cursor: grab;
+      }
+      .modal-handle-hit:active { cursor: grabbing; }
+      .modal-handle {
+        display: block; width: 42px; height: 5px; border-radius: 3px;
+        background: var(--border); margin: 0;
+      }
+      .modal-title { text-align: center; }
+    }
+
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -476,41 +651,57 @@
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script>
   const { useState, useEffect, useRef, useCallback } = React;
+  const h = React.createElement;
 
   // ── SVG Icon Helpers ──
-  const rc = React.createElement;
-  const svgBase = (size, extra={}) => ({ width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round', style: { display:'block', flexShrink:0 }, ...extra });
+  const svgBase = (size, extra={}) => ({ width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2.5, strokeLinecap: 'round', strokeLinejoin: 'round', style: { display:'block', flexShrink:0 }, 'aria-hidden':'true', ...extra });
 
-  const IconPencil    = ({size=18}={}) => rc('svg', svgBase(size), rc('path',{d:'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'}), rc('path',{d:'M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'}));
-  const IconTrash     = ({size=18}={}) => rc('svg', svgBase(size), rc('polyline',{points:'3 6 5 6 21 6'}), rc('path',{d:'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2'}), rc('line',{x1:10,y1:11,x2:10,y2:17}), rc('line',{x1:14,y1:11,x2:14,y2:17}));
-  const IconSearch    = ({size=17}={}) => rc('svg', svgBase(size), rc('circle',{cx:11,cy:11,r:8}), rc('line',{x1:21,y1:21,x2:16.65,y2:16.65}));
-  const IconCamera    = ({size=17}={}) => rc('svg', svgBase(size), rc('path',{d:'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'}), rc('circle',{cx:12,cy:13,r:4}));
-  const IconImage     = ({size=17}={}) => rc('svg', svgBase(size), rc('rect',{x:3,y:3,width:18,height:18,rx:2,ry:2}), rc('circle',{cx:8.5,cy:8.5,r:1.5}), rc('polyline',{points:'21 15 16 10 5 21'}));
-  const IconList      = ({size=18}={}) => rc('svg', svgBase(size), rc('line',{x1:8,y1:6,x2:21,y2:6}), rc('line',{x1:8,y1:12,x2:21,y2:12}), rc('line',{x1:8,y1:18,x2:21,y2:18}), rc('line',{x1:3,y1:6,x2:3.01,y2:6}), rc('line',{x1:3,y1:12,x2:3.01,y2:12}), rc('line',{x1:3,y1:18,x2:3.01,y2:18}));
-  const IconCheckSq   = ({size=52}={}) => rc('svg', svgBase(size), rc('polyline',{points:'9 11 12 14 22 4'}), rc('path',{d:'M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'}));
-  const IconStar      = ({size=24}={}) => rc('svg', svgBase(size, {fill:'currentColor',stroke:'none'}), rc('polygon',{points:'12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'}));
-  const IconNote      = ({size=52}={}) => rc('svg', svgBase(size), rc('path',{d:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'}), rc('polyline',{points:'14 2 14 8 20 8'}), rc('line',{x1:16,y1:13,x2:8,y2:13}), rc('line',{x1:16,y1:17,x2:8,y2:17}), rc('polyline',{points:'10 9 9 9 8 9'}));
-  const IconCheck     = ({size=14}={}) => rc('svg', svgBase(size), rc('polyline',{points:'20 6 9 17 4 12'}));
-  const IconPlus      = ({size=20}={}) => rc('svg', svgBase(size), rc('line',{x1:12,y1:5,x2:12,y2:19}), rc('line',{x1:5,y1:12,x2:19,y2:12}));
-  const IconBroom     = ({size=14}={}) => rc('svg', svgBase(size), rc('path',{d:'M3 6h18'}), rc('path',{d:'M8 6V4h8v2'}), rc('path',{d:'M19 6l-1 14H6L5 6'}));
-  const IconX         = ({size=18}={}) => rc('svg', svgBase(size), rc('line',{x1:18,y1:6,x2:6,y2:18}), rc('line',{x1:6,y1:6,x2:18,y2:18}));
-  const IconChevL     = ({size=22}={}) => rc('svg', svgBase(size), rc('polyline',{points:'15 18 9 12 15 6'}));
-  const IconChevR     = ({size=22}={}) => rc('svg', svgBase(size), rc('polyline',{points:'9 18 15 12 9 6'}));
-  const IconRocket    = ({size=22}={}) => rc('svg', svgBase(size), rc('path',{d:'M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z'}), rc('path',{d:'M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z'}), rc('path',{d:'M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0'}), rc('path',{d:'M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5'}));
+  const IconPencil  = ({size=18}={}) => h('svg', svgBase(size), h('path',{d:'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'}), h('path',{d:'M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'}));
+  const IconTrash   = ({size=18}={}) => h('svg', svgBase(size), h('polyline',{points:'3 6 5 6 21 6'}), h('path',{d:'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2'}), h('line',{x1:10,y1:11,x2:10,y2:17}), h('line',{x1:14,y1:11,x2:14,y2:17}));
+  const IconSearch  = ({size=17}={}) => h('svg', svgBase(size), h('circle',{cx:11,cy:11,r:8}), h('line',{x1:21,y1:21,x2:16.65,y2:16.65}));
+  const IconCamera  = ({size=17}={}) => h('svg', svgBase(size), h('path',{d:'M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'}), h('circle',{cx:12,cy:13,r:4}));
+  const IconImage   = ({size=17}={}) => h('svg', svgBase(size), h('rect',{x:3,y:3,width:18,height:18,rx:2,ry:2}), h('circle',{cx:8.5,cy:8.5,r:1.5}), h('polyline',{points:'21 15 16 10 5 21'}));
+  const IconList    = ({size=18}={}) => h('svg', svgBase(size), h('line',{x1:8,y1:6,x2:21,y2:6}), h('line',{x1:8,y1:12,x2:21,y2:12}), h('line',{x1:8,y1:18,x2:21,y2:18}), h('line',{x1:3,y1:6,x2:3.01,y2:6}), h('line',{x1:3,y1:12,x2:3.01,y2:12}), h('line',{x1:3,y1:18,x2:3.01,y2:18}));
+  const IconCheckSq = ({size=52}={}) => h('svg', svgBase(size), h('polyline',{points:'9 11 12 14 22 4'}), h('path',{d:'M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'}));
+  const IconStar    = ({size=24}={}) => h('svg', svgBase(size, {fill:'currentColor',stroke:'none'}), h('polygon',{points:'12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'}));
+  const IconNote    = ({size=52}={}) => h('svg', svgBase(size), h('path',{d:'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'}), h('polyline',{points:'14 2 14 8 20 8'}), h('line',{x1:16,y1:13,x2:8,y2:13}), h('line',{x1:16,y1:17,x2:8,y2:17}));
+  const IconCheck   = ({size=14}={}) => h('svg', svgBase(size), h('polyline',{points:'20 6 9 17 4 12'}));
+  const IconPlus    = ({size=20}={}) => h('svg', svgBase(size), h('line',{x1:12,y1:5,x2:12,y2:19}), h('line',{x1:5,y1:12,x2:19,y2:12}));
+  const IconBroom   = ({size=14}={}) => h('svg', svgBase(size), h('path',{d:'M3 6h18'}), h('path',{d:'M8 6V4h8v2'}), h('path',{d:'M19 6l-1 14H6L5 6'}));
+  const IconX       = ({size=18}={}) => h('svg', svgBase(size), h('line',{x1:18,y1:6,x2:6,y2:18}), h('line',{x1:6,y1:6,x2:18,y2:18}));
+  const IconChevL   = ({size=22}={}) => h('svg', svgBase(size), h('polyline',{points:'15 18 9 12 15 6'}));
+  const IconChevR   = ({size=22}={}) => h('svg', svgBase(size), h('polyline',{points:'9 18 15 12 9 6'}));
+  const IconDots    = ({size=20}={}) => h('svg', svgBase(size), h('circle',{cx:12,cy:5,r:1.6,fill:'currentColor',stroke:'none'}), h('circle',{cx:12,cy:12,r:1.6,fill:'currentColor',stroke:'none'}), h('circle',{cx:12,cy:19,r:1.6,fill:'currentColor',stroke:'none'}));
+  const IconGrip    = ({size=20}={}) => h('svg', svgBase(size), ...[6,12,18].map(cy => h('circle',{key:'a'+cy,cx:9,cy,r:1.6,fill:'currentColor',stroke:'none'})), ...[6,12,18].map(cy => h('circle',{key:'b'+cy,cx:15,cy,r:1.6,fill:'currentColor',stroke:'none'})));
+  const IconCalendar= ({size=14}={}) => h('svg', svgBase(size), h('rect',{x:3,y:4,width:18,height:18,rx:2}), h('line',{x1:16,y1:2,x2:16,y2:6}), h('line',{x1:8,y1:2,x2:8,y2:6}), h('line',{x1:3,y1:10,x2:21,y2:10}));
+  const IconFlag    = ({size=14}={}) => h('svg', svgBase(size), h('path',{d:'M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z'}), h('line',{x1:4,y1:22,x2:4,y2:15}));
+  const IconCopy    = ({size=18}={}) => h('svg', svgBase(size), h('rect',{x:9,y:9,width:13,height:13,rx:2}), h('path',{d:'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'}));
+  const IconRefresh = ({size=18}={}) => h('svg', svgBase(size), h('polyline',{points:'23 4 23 10 17 10'}), h('path',{d:'M20.49 15a9 9 0 1 1-2.12-9.36L23 10'}));
+  const IconFolder  = ({size=18}={}) => h('svg', svgBase(size), h('path',{d:'M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z'}));
+  const IconDown    = ({size=18}={}) => h('svg', svgBase(size), h('path',{d:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'}), h('polyline',{points:'7 10 12 15 17 10'}), h('line',{x1:12,y1:15,x2:12,y2:3}));
+  const IconUp      = ({size=18}={}) => h('svg', svgBase(size), h('path',{d:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'}), h('polyline',{points:'17 8 12 3 7 8'}), h('line',{x1:12,y1:3,x2:12,y2:15}));
+  const IconSelect  = ({size=18}={}) => h('svg', svgBase(size), h('polyline',{points:'9 11 12 14 22 4'}), h('path',{d:'M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'}));
+  const IconCheckCircle = ({size=18}={}) => h('svg', svgBase(size), h('path',{d:'M22 11.08V12a10 10 0 1 1-5.93-9.14'}), h('polyline',{points:'22 4 12 14.01 9 11.01'}));
 
   // ── Palette options ──
   const COLORS = [
-    { id:'red',    val:'#e94560' },
-    { id:'orange', val:'#f5a623' },
-    { id:'teal',   val:'#00d4aa' },
-    { id:'blue',   val:'#4a9eff' },
-    { id:'purple', val:'#b06cff' },
-    { id:'pink',   val:'#ff6bb3' },
+    { id:'red',    val:'#e94560', name:'Red' },
+    { id:'orange', val:'#f5a623', name:'Orange' },
+    { id:'teal',   val:'#00d4aa', name:'Teal' },
+    { id:'blue',   val:'#4a9eff', name:'Blue' },
+    { id:'purple', val:'#b06cff', name:'Purple' },
+    { id:'pink',   val:'#ff6bb3', name:'Pink' },
+  ];
+
+  const PRIORITIES = [
+    { id:'high',   label:'High' },
+    { id:'medium', label:'Med' },
+    { id:'low',    label:'Low' },
   ];
 
   // ── Local storage helpers ──
   const STORE_KEY = 'checkmate_v3';
-  const SCHEMA_VERSION = 3;
+  const SCHEMA_VERSION = 4;
 
   const defaultData = () => ({ version: SCHEMA_VERSION, lists: [], tasks: {} });
 
@@ -519,11 +710,15 @@
       const raw = localStorage.getItem(STORE_KEY);
       if (!raw) return defaultData();
       const parsed = JSON.parse(raw);
-      // migrate older schemas
       if (!parsed.version || parsed.version < SCHEMA_VERSION) {
         const migrated = defaultData();
-        migrated.lists = parsed.lists || [];
-        migrated.tasks = parsed.tasks || {};
+        migrated.lists = (parsed.lists || []).map(l => ({ category:'', ...l }));
+        const srcTasks = parsed.tasks || {};
+        const out = {};
+        Object.keys(srcTasks).forEach(k => {
+          out[k] = (srcTasks[k] || []).map(t => ({ photos:[], priority:'none', due:null, done:false, ...t }));
+        });
+        migrated.tasks = out;
         return migrated;
       }
       return parsed;
@@ -536,44 +731,181 @@
   const save = (data) => {
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify({ ...data, version: SCHEMA_VERSION }));
+      return true;
     } catch(e) {
       console.warn('CheckMate: localStorage write failed.', e);
+      return false;
     }
   };
 
-  // ── Tiny ID ──
   const uid = () => Math.random().toString(36).slice(2, 9);
+
+  const startOfToday = () => { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); };
+  const formatDate = (ts) => new Date(ts).toLocaleDateString(undefined, { month:'short', day:'numeric' });
+  const toDateInput = (ts) => { if (!ts) return ''; const d = new Date(ts); const off = d.getTimezoneOffset(); return new Date(ts - off*60000).toISOString().slice(0,10); };
+  const fromDateInput = (v) => (v ? new Date(v + 'T00:00:00').getTime() : null);
+
+  // ── Focus trap / Escape hook ──
+  function useModalA11y(onClose) {
+    const ref = useRef(null);
+    useEffect(() => {
+      const prev = document.activeElement;
+      const node = ref.current;
+      const focusables = () => node
+        ? Array.from(node.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+            .filter(el => !el.disabled)
+        : [];
+      const f = focusables();
+      const firstTimer = setTimeout(() => { const list = focusables(); if (list.length) list[0].focus(); }, 60);
+      const onKey = (e) => {
+        if (e.key === 'Escape') { e.stopPropagation(); onClose(); return; }
+        if (e.key === 'Tab') {
+          const list = focusables();
+          if (!list.length) return;
+          const first = list[0], last = list[list.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      };
+      document.addEventListener('keydown', onKey, true);
+      return () => {
+        clearTimeout(firstTimer);
+        document.removeEventListener('keydown', onKey, true);
+        if (prev && prev.focus) { try { prev.focus(); } catch(_){} }
+      };
+    }, [onClose]);
+    return ref;
+  }
+
+  // ── Bottom-sheet drag-to-dismiss ──
+  function useSheetDrag(onClose) {
+    const nodeRef = useRef(null);
+    const drag = useRef(null);
+    const isMobile = () => typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 520px)').matches;
+    const onMove = (e) => {
+      const d = drag.current; if (!d) return;
+      if (e.cancelable) e.preventDefault();
+      const dy = Math.max(0, e.clientY - d.y);
+      d.dy = dy;
+      const node = nodeRef.current;
+      if (node) { node.style.transition = 'none'; node.style.transform = 'translateY(' + dy + 'px)'; }
+    };
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      const d = drag.current; drag.current = null;
+      const node = nodeRef.current;
+      if (!d || !node) return;
+      node.style.transition = 'transform 0.25s ease';
+      if (d.dy > 90) { node.style.transform = 'translateY(100%)'; setTimeout(() => { try { onClose(); } catch(_){} }, 200); }
+      else { node.style.transform = 'translateY(0px)'; }
+    };
+    const onDown = (e) => {
+      if (!isMobile()) return;
+      drag.current = { y: e.clientY, dy: 0 };
+      window.addEventListener('pointermove', onMove, { passive: false });
+      window.addEventListener('pointerup', onUp);
+      window.addEventListener('pointercancel', onUp);
+    };
+    return { nodeRef, onDown };
+  }
 
   // ── Progress Ring ──
   function Ring({ pct, color }) {
     const r = 18, circ = 2 * Math.PI * r;
     const offset = circ - (pct / 100) * circ;
-    return React.createElement('div', { className: 'ring-wrap' },
-      React.createElement('svg', { width: 44, height: 44, viewBox: '0 0 44 44' },
-        React.createElement('circle', { className: 'ring-bg', cx: 22, cy: 22, r }),
-        React.createElement('circle', {
-          className: 'ring-fill', cx: 22, cy: 22, r,
-          stroke: color || '#e94560',
+    const complete = pct >= 100;
+    return h('div', { className: 'ring-wrap', 'aria-hidden':'true' },
+      h('svg', { width: 46, height: 46, viewBox: '0 0 46 46' },
+        h('circle', { className: 'ring-bg', cx: 23, cy: 23, r }),
+        h('circle', {
+          className: 'ring-fill', cx: 23, cy: 23, r,
+          stroke: complete ? 'var(--accent3)' : (color || '#e94560'),
           strokeDasharray: circ,
           strokeDashoffset: offset,
         })
       ),
-      React.createElement('div', { className: 'ring-text' }, Math.round(pct) + '%')
+      h('div', { className: 'ring-text' }, complete ? h(IconCheck,{size:14}) : Math.round(pct) + '%')
     );
   }
 
   // ── Main App ──
   function App() {
     const [data, setData] = useState(load);
-    const [view, setView] = useState('lists'); // 'lists' | 'tasks'
+    const [view, setView] = useState('lists');
     const [activeList, setActiveList] = useState(null);
-    const [taskFilter, setTaskFilter] = useState('all'); // all | active | done
+    const [taskFilter, setTaskFilter] = useState('all');
     const [search, setSearch] = useState('');
+    const [listSearch, setListSearch] = useState('');
     const [modal, setModal] = useState(null);
-    const [lightbox, setLightbox] = useState(null); // { photos, index }
-    // modal types: 'newList' | 'editList' | 'newTask' | 'editTask' | 'deleteList' | 'deleteTask'
+    const [lightbox, setLightbox] = useState(null);
+    const [toast, setToast] = useState(null);
+    const [storageError, setStorageError] = useState(false);
+    const [storageDismissed, setStorageDismissed] = useState(false);
+    const [kbOpen, setKbOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+    const [installEvt, setInstallEvt] = useState(null);
+    const [installDismissed, setInstallDismissed] = useState(() => {
+      try { return localStorage.getItem('checkmate_a2hs_dismissed') === '1'; } catch(_) { return false; }
+    });
 
-    useEffect(() => { save(data); }, [data]);
+    const contentRef = useRef(null);
+
+    useEffect(() => { setStorageError(!save(data)); }, [data]);
+
+    // ── Hide FAB while a field is focused (on-screen keyboard) ──
+    useEffect(() => {
+      const isField = (el) => !!el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName);
+      const onIn = (e) => { if (isField(e.target)) setKbOpen(true); };
+      const onOut = () => setTimeout(() => setKbOpen(isField(document.activeElement)), 0);
+      document.addEventListener('focusin', onIn);
+      document.addEventListener('focusout', onOut);
+      return () => { document.removeEventListener('focusin', onIn); document.removeEventListener('focusout', onOut); };
+    }, []);
+
+    // ── PWA install prompt ──
+    useEffect(() => {
+      const onPrompt = (e) => { e.preventDefault(); setInstallEvt(e); };
+      const onInstalled = () => setInstallEvt(null);
+      window.addEventListener('beforeinstallprompt', onPrompt);
+      window.addEventListener('appinstalled', onInstalled);
+      return () => { window.removeEventListener('beforeinstallprompt', onPrompt); window.removeEventListener('appinstalled', onInstalled); };
+    }, []);
+
+    // ── Android hardware back / swipe-back ──
+    const stateRef = useRef({});
+    stateRef.current = { view, modal, lightbox };
+    const navDepth = useRef(0);
+    const ignorePop = useRef(0);
+    const layerCount = (view === 'tasks' ? 1 : 0) + (modal ? 1 : 0) + (lightbox ? 1 : 0);
+
+    useEffect(() => {
+      const cur = navDepth.current;
+      if (layerCount > cur) {
+        for (let i = cur; i < layerCount; i++) { try { history.pushState({ cm: i + 1 }, ''); } catch(_) {} }
+        navDepth.current = layerCount;
+      } else if (layerCount < cur) {
+        const diff = cur - layerCount;
+        ignorePop.current += diff;
+        navDepth.current = layerCount;
+        for (let i = 0; i < diff; i++) { try { history.back(); } catch(_) {} }
+      }
+    }, [layerCount]);
+
+    useEffect(() => {
+      const onPop = () => {
+        if (ignorePop.current > 0) { ignorePop.current--; return; }
+        navDepth.current = Math.max(0, navDepth.current - 1);
+        const s = stateRef.current;
+        if (s.lightbox) setLightbox(null);
+        else if (s.modal) setModal(null);
+        else if (s.view === 'tasks') { setView('lists'); setActiveList(null); }
+      };
+      window.addEventListener('popstate', onPop);
+      return () => window.removeEventListener('popstate', onPop);
+    }, []);
+
 
     const lists = data.lists;
     const tasks = (listId) => data.tasks[listId] || [];
@@ -581,129 +913,265 @@
     const currentList = lists.find(l => l.id === activeList);
     const currentTasks = activeList ? tasks(activeList) : [];
 
-    // ── Stats ──
     const totalLists = lists.length;
     const totalTasks = Object.values(data.tasks).flat().length;
     const doneTasks = Object.values(data.tasks).flat().filter(t => t.done).length;
 
+    // Categories derived from lists
+    const categories = Array.from(new Set(lists.map(l => l.category).filter(Boolean)));
+
+    // ── Undo helper ──
+    const pushToast = useCallback((message, undo) => {
+      setToast({ message, undo, key: uid() });
+    }, []);
+
     // ── List CRUD ──
-    const createList = ({ title, color }) => {
+    const createList = ({ title, color, category }) => {
       const id = uid();
-      setData(d => ({ ...d, lists: [{ id, title, color, createdAt: Date.now() }, ...d.lists], tasks: { ...d.tasks, [id]: [] } }));
+      setData(d => ({ ...d, lists: [{ id, title, color, category: category || '', createdAt: Date.now() }, ...d.lists], tasks: { ...d.tasks, [id]: [] } }));
     };
     const updateList = (id, patch) => {
       setData(d => ({ ...d, lists: d.lists.map(l => l.id === id ? { ...l, ...patch } : l) }));
     };
     const deleteList = (id) => {
+      const snapshot = data;
       setData(d => { const { [id]: _, ...rest } = d.tasks; return { ...d, lists: d.lists.filter(l => l.id !== id), tasks: rest }; });
       if (activeList === id) { setView('lists'); setActiveList(null); }
+      pushToast('Checklist deleted', () => setData(snapshot));
+    };
+    const duplicateList = (id) => {
+      const src = lists.find(l => l.id === id);
+      if (!src) return;
+      const newId = uid();
+      const cloned = tasks(id).map(t => ({ ...t, id: uid(), done: false, doneAt: null, photos: (t.photos || []).slice() }));
+      setData(d => ({
+        ...d,
+        lists: [{ ...src, id: newId, title: src.title + ' (copy)', createdAt: Date.now() }, ...d.lists],
+        tasks: { ...d.tasks, [newId]: cloned },
+      }));
+      pushToast('Checklist duplicated');
+    };
+    const resetList = (id) => {
+      const snapshot = data;
+      setData(d => ({ ...d, tasks: { ...d.tasks, [id]: (d.tasks[id] || []).map(t => ({ ...t, done: false, doneAt: null })) } }));
+      pushToast('Checkboxes reset', () => setData(snapshot));
     };
 
     // ── Task CRUD ──
-    const createTask = (listId, { text, photos }) => {
-      const t = { id: uid(), text, photos: photos || [], done: false, createdAt: Date.now() };
+    const createTask = (listId, { text, photos, priority, due }) => {
+      const t = { id: uid(), text, photos: photos || [], priority: priority || 'none', due: due || null, done: false, createdAt: Date.now(), doneAt: null };
       setData(d => ({ ...d, tasks: { ...d.tasks, [listId]: [t, ...(d.tasks[listId] || [])] } }));
+      return t;
     };
     const updateTask = (listId, taskId, patch) => {
       setData(d => ({ ...d, tasks: { ...d.tasks, [listId]: d.tasks[listId].map(t => t.id === taskId ? { ...t, ...patch } : t) } }));
     };
     const deleteTask = (listId, taskId) => {
+      const snapshot = data;
       setData(d => ({ ...d, tasks: { ...d.tasks, [listId]: d.tasks[listId].filter(t => t.id !== taskId) } }));
+      pushToast('Task deleted', () => setData(snapshot));
     };
     const toggleTask = (listId, taskId) => {
-      // Haptic feedback on toggle
       if (navigator.vibrate) navigator.vibrate(40);
       setData(d => {
-        const updated = d.tasks[listId].map(t =>
-          t.id === taskId ? { ...t, done: !t.done, doneAt: !t.done ? Date.now() : null } : t
-        );
-        // sort: undone first (newest createdAt first), done last (oldest doneAt first)
-        const sorted = [
-          ...updated.filter(t => !t.done).sort((a,b) => b.createdAt - a.createdAt),
-          ...updated.filter(t =>  t.done).sort((a,b) => a.doneAt - b.doneAt),
-        ];
-        return { ...d, tasks: { ...d.tasks, [listId]: sorted } };
+        const arr = d.tasks[listId] || [];
+        const target = arr.find(t => t.id === taskId);
+        if (!target) return d;
+        const nowDone = !target.done;
+        let updated = arr.map(t => t.id === taskId ? { ...t, done: nowDone, doneAt: nowDone ? Date.now() : null } : t);
+        if (nowDone) {
+          const active = updated.filter(t => !t.done);
+          const done = updated.filter(t => t.done).sort((a,b) => a.doneAt - b.doneAt);
+          updated = [...active, ...done];
+        } else {
+          const moved = updated.find(t => t.id === taskId);
+          const rest = updated.filter(t => t.id !== taskId);
+          updated = [moved, ...rest];
+        }
+        return { ...d, tasks: { ...d.tasks, [listId]: updated } };
+      });
+    };
+    const clearDoneTasks = (listId) => {
+      const snapshot = data;
+      const count = (data.tasks[listId] || []).filter(t => t.done).length;
+      setData(d => ({ ...d, tasks: { ...d.tasks, [listId]: d.tasks[listId].filter(t => !t.done) } }));
+      pushToast(count + ' completed task' + (count !== 1 ? 's' : '') + ' cleared', () => setData(snapshot));
+    };
+    const reorderTasks = (listId, fromId, toId) => {
+      setData(d => {
+        const arr = [...(d.tasks[listId] || [])];
+        const from = arr.findIndex(t => t.id === fromId);
+        const to = arr.findIndex(t => t.id === toId);
+        if (from < 0 || to < 0 || from === to) return d;
+        const [moved] = arr.splice(from, 1);
+        arr.splice(to, 0, moved);
+        return { ...d, tasks: { ...d.tasks, [listId]: arr } };
       });
     };
 
-    // ── Clear done tasks ──
-    const clearDoneTasks = (listId) => {
-      setData(d => ({ ...d, tasks: { ...d.tasks, [listId]: d.tasks[listId].filter(t => !t.done) } }));
+    // ── Batch ops ──
+    const batchComplete = (listId, ids) => {
+      if (navigator.vibrate) navigator.vibrate(20);
+      const idSet = new Set(ids);
+      setData(d => {
+        const arr = (d.tasks[listId] || []).map(t => idSet.has(t.id) ? { ...t, done: true, doneAt: Date.now() } : t);
+        const active = arr.filter(t => !t.done);
+        const done = arr.filter(t => t.done).sort((a,b) => a.doneAt - b.doneAt);
+        return { ...d, tasks: { ...d.tasks, [listId]: [...active, ...done] } };
+      });
+      pushToast(ids.length + ' task' + (ids.length !== 1 ? 's' : '') + ' completed');
     };
+    const batchDelete = (listId, ids) => {
+      if (navigator.vibrate) navigator.vibrate(20);
+      const snapshot = data;
+      const idSet = new Set(ids);
+      setData(d => ({ ...d, tasks: { ...d.tasks, [listId]: (d.tasks[listId] || []).filter(t => !idSet.has(t.id)) } }));
+      pushToast(ids.length + ' task' + (ids.length !== 1 ? 's' : '') + ' deleted', () => setData(snapshot));
+    };
+    const batchMove = (fromId, toId, ids) => {
+      if (fromId === toId) return;
+      if (navigator.vibrate) navigator.vibrate(20);
+      const snapshot = data;
+      const idSet = new Set(ids);
+      setData(d => {
+        const moving = (d.tasks[fromId] || []).filter(t => idSet.has(t.id));
+        const remaining = (d.tasks[fromId] || []).filter(t => !idSet.has(t.id));
+        return { ...d, tasks: { ...d.tasks, [fromId]: remaining, [toId]: [...moving, ...(d.tasks[toId] || [])] } };
+      });
+      pushToast(ids.length + ' task' + (ids.length !== 1 ? 's' : '') + ' moved', () => setData(snapshot));
+    };
+
+    // ── Backup ──
+    const exportData = () => {
+      try {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'checkmate-backup-' + new Date().toISOString().slice(0,10) + '.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch(e) { pushToast('Export failed'); }
+    };
+    const importData = (file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (!parsed || !Array.isArray(parsed.lists) || typeof parsed.tasks !== 'object') throw new Error('bad');
+          const snapshot = data;
+          setData({ version: SCHEMA_VERSION, lists: parsed.lists, tasks: parsed.tasks });
+          pushToast('Backup restored', () => setData(snapshot));
+        } catch(err) {
+          pushToast('Import failed — invalid backup file');
+        }
+      };
+      reader.readAsText(file);
+    };
+    const clearAllData = () => {
+      const snapshot = data;
+      setData(defaultData());
+      setView('lists'); setActiveList(null);
+      pushToast('All data cleared', () => setData(snapshot));
+    };
+
+    // ── Filtering ──
     const filteredTasks = currentTasks.filter(t => {
       const matchFilter = taskFilter === 'all' || (taskFilter === 'active' && !t.done) || (taskFilter === 'done' && t.done);
       const matchSearch = !search || t.text.toLowerCase().includes(search.toLowerCase());
       return matchFilter && matchSearch;
     });
 
-    // ── Progress ──
     const listProgress = (id) => {
       const ts = tasks(id);
       if (!ts.length) return 0;
       return (ts.filter(t => t.done).length / ts.length) * 100;
     };
 
-    // ── Header subtitle ──
     const subtitle = view === 'lists'
-      ? `${totalLists} list${totalLists !== 1 ? 's' : ''} · ${doneTasks}/${totalTasks} tasks done`
-      : `${currentTasks.filter(t=>t.done).length}/${currentTasks.length} completed`;
+      ? `${totalLists} list${totalLists !== 1 ? 's' : ''} \u00b7 ${doneTasks}/${totalTasks} tasks done`
+      : `${currentTasks.filter(t => t.done).length}/${currentTasks.length} completed`;
 
-    return React.createElement('div', { className: 'app' },
+    return h('div', { className: 'app' },
       // Header
-      React.createElement('div', { className: 'header' },
-        React.createElement('div', { className: 'header-top' },
-          React.createElement('div', { className: 'logo' }, 'Check', React.createElement('span', null, 'Mate')),
-          view === 'lists' && React.createElement('div', { style: { display:'flex', gap: 8 } },
-            React.createElement('button', {
-              className: 'icon-btn',
-              onClick: () => setModal({ type: 'newList' }),
-              title: 'New List'
-            }, React.createElement(IconPlus, {size:20}))
-          )
+      h('div', { className: 'header' + (scrolled ? ' collapsed' : '') },
+        h('div', { className: 'header-top' },
+          h('div', { className: 'logo' }, 'Check', h('span', null, 'Mate')),
+          h('button', {
+            className: 'icon-btn', 'aria-label': 'Settings and backup', title: 'Settings & backup',
+            onClick: () => setModal({ type: 'settings' })
+          }, h(IconDots, { size: 20 }))
         ),
-        React.createElement('div', { className: 'header-subtitle' }, subtitle)
-      ),
-
-      // View tabs (only on lists view)
-      view === 'lists' && React.createElement('div', { className: 'view-tabs' },
-        React.createElement('button', { className: 'tab-btn active' }, React.createElement(IconList, {size:16}), ' My Lists')
+        h('div', { className: 'header-subtitle' }, subtitle)
       ),
 
       // Content
-      React.createElement('div', { className: 'content' },
+      h('div', {
+        className: 'content', ref: contentRef,
+        onScroll: (e) => setScrolled(e.currentTarget.scrollTop > 24)
+      },
+        storageError && !storageDismissed && h('div', { className: 'error-banner', role: 'alert' },
+          h(IconX, { size: 18 }),
+          'Storage is full — newer changes may not be saved. Export a backup.',
+          h('button', { onClick: () => setStorageDismissed(true), 'aria-label': 'Dismiss storage warning' }, 'Dismiss')
+        ),
         view === 'lists'
-          ? React.createElement(ListView, {
+          ? h(ListView, {
               lists, tasks, listProgress, COLORS,
-              onOpen: (id) => { setActiveList(id); setView('tasks'); setTaskFilter('all'); setSearch(''); },
+              search: listSearch, onSearch: setListSearch, categories,
+              onOpen: (id) => { setActiveList(id); setView('tasks'); setTaskFilter('all'); setSearch(''); setScrolled(false); if (contentRef.current) contentRef.current.scrollTop = 0; },
               onEdit: (l) => setModal({ type: 'editList', list: l }),
               onDelete: (l) => setModal({ type: 'deleteList', list: l }),
             })
-          : React.createElement(TasksView, {
+          : h(TasksView, {
               list: currentList, tasks: filteredTasks, allTasks: currentTasks,
-              filter: taskFilter, search,
-              onBack: () => { setView('lists'); setActiveList(null); },
+              filter: taskFilter, search, lists,
+              onBack: () => { setView('lists'); setActiveList(null); setScrolled(false); if (contentRef.current) contentRef.current.scrollTop = 0; },
               onFilterChange: setTaskFilter,
               onSearch: setSearch,
               onToggle: (tid) => toggleTask(activeList, tid),
               onEdit: (t) => setModal({ type: 'editTask', task: t }),
               onDelete: (t) => setModal({ type: 'deleteTask', task: t }),
+              onSwipeDelete: (t) => deleteTask(activeList, t.id),
               onClearDone: () => clearDoneTasks(activeList),
               onPhotoView: (photos, index) => setLightbox({ photos, index }),
+              onQuickAdd: (text) => createTask(activeList, { text, photos: [] }),
+              onOpenDetails: (text) => setModal({ type: 'newTask', prefill: text }),
+              onReorder: (from, to) => reorderTasks(activeList, from, to),
+              onBatchComplete: (ids) => batchComplete(activeList, ids),
+              onBatchDelete: (ids) => batchDelete(activeList, ids),
+              onBatchMove: (ids, toId) => batchMove(activeList, toId, ids),
+              onOpenListMenu: () => setModal({ type: 'listMenu', list: currentList }),
             })
       ),
 
       // FAB
       view === 'lists'
-        ? React.createElement('button', { className: 'fab', onClick: () => setModal({ type: 'newList' }) },
-            React.createElement(IconPlus, {size:22}), 'New Checklist'
-          )
-        : React.createElement('button', { className: 'fab', onClick: () => setModal({ type: 'newTask' }) },
-            React.createElement(IconPlus, {size:22}), 'Add Items'
-          ),
+        ? h('button', { className: 'fab' + (kbOpen ? ' hidden' : ''), onClick: () => setModal({ type: 'newList' }) },
+            h(IconPlus, { size: 22 }), 'New Checklist')
+        : h('button', { className: 'fab' + (kbOpen ? ' hidden' : ''), onClick: () => setModal({ type: 'newTask' }) },
+            h(IconPlus, { size: 22 }), 'Add Item'),
+
+      // Install prompt
+      installEvt && !installDismissed && h('div', { className: 'install-bar', role: 'dialog', 'aria-label': 'Install CheckMate' },
+        h('div', { className: 'install-bar-text' },
+          h('div', { className: 'install-bar-title' }, 'Install CheckMate'),
+          h('div', { className: 'install-bar-sub' }, 'Add to your home screen for a full-screen app')
+        ),
+        h('button', { className: 'install-bar-btn', onClick: async () => {
+          try { installEvt.prompt(); const r = await installEvt.userChoice; if (r && r.outcome === 'accepted') setInstallEvt(null); } catch(_) {}
+        } }, 'Install'),
+        h('button', { className: 'install-bar-x', 'aria-label': 'Dismiss install prompt', onClick: () => { setInstallDismissed(true); try { localStorage.setItem('checkmate_a2hs_dismissed', '1'); } catch(_) {} } }, h(IconX, { size: 16 }))
+      ),
+
+      // Snackbar
+      toast && h(Snackbar, { key: toast.key, message: toast.message, onUndo: toast.undo, onClose: () => setToast(null) }),
 
       // Modals
-      modal && React.createElement(ModalLayer, {
-        modal, COLORS,
+      modal && h(ModalLayer, {
+        modal, COLORS, PRIORITIES, lists,
         onClose: () => setModal(null),
         onCreate: (payload) => {
           if (modal.type === 'newList') createList(payload);
@@ -717,10 +1185,18 @@
           if (modal.type === 'deleteList') deleteList(modal.list.id);
           else if (modal.type === 'deleteTask') deleteTask(activeList, modal.task.id);
         },
+        onDuplicate: (id) => duplicateList(id),
+        onReset: (id) => resetList(id),
+        onBatchMove: (ids, toId) => batchMove(activeList, toId, ids),
+        onExport: exportData,
+        onImport: importData,
+        onClearAll: clearAllData,
+        onEditList: (l) => setModal({ type: 'editList', list: l }),
+        onDeleteList: (l) => setModal({ type: 'deleteList', list: l }),
       }),
 
       // Lightbox
-      lightbox && React.createElement(PhotoLightbox, {
+      lightbox && h(PhotoLightbox, {
         photos: lightbox.photos,
         startIndex: lightbox.index,
         onClose: () => setLightbox(null),
@@ -728,244 +1204,522 @@
     );
   }
 
-  // ── Lists View ──
-  function ListView({ lists, tasks, listProgress, COLORS, onOpen, onEdit, onDelete }) {
-    if (!lists.length) return React.createElement('div', { className: 'empty-state' },
-      React.createElement('div', { className: 'empty-icon' }, React.createElement(IconCheckSq, {size:56})),
-      React.createElement('div', { className: 'empty-title' }, 'No checklists yet'),
-      React.createElement('div', { className: 'empty-sub' }, 'Tap the + button below\nto create your first checklist')
-    );
-
-    return React.createElement('div', { className: 'lists-grid' },
-      ...lists.map((list, i) => {
-        const ts = tasks(list.id) || [];
-        const done = ts.filter(t => t.done).length;
-        const pct = listProgress(list.id);
-        const color = COLORS.find(c => c.id === list.color)?.val || '#e94560';
-
-        return React.createElement('div', {
-          key: list.id, className: 'list-card',
-          style: { animationDelay: i * 0.06 + 's' },
-          onClick: () => onOpen(list.id),
-        },
-          React.createElement('div', { style: { position:'absolute', left:0, top:0, bottom:0, width:4, background: color, borderRadius:'4px 0 0 4px' } }),
-          React.createElement('div', { className: 'list-card-header' },
-            React.createElement('div', { className: 'list-card-title' }, list.title),
-            React.createElement('div', { style: { display:'flex', alignItems:'center', gap:8 } },
-              React.createElement(Ring, { pct, color }),
-              React.createElement('div', { className: 'list-card-actions', onClick: e => e.stopPropagation() },
-                React.createElement('button', { className: 'icon-btn', onClick: () => onEdit(list), title: 'Edit' }, React.createElement(IconPencil, {size:18})),
-                React.createElement('button', { className: 'icon-btn danger', onClick: () => onDelete(list), title: 'Delete' }, React.createElement(IconTrash, {size:18}))
-              )
-            )
-          ),
-          React.createElement('div', { className: 'task-count' },
-            ts.length === 0 ? 'No tasks yet — tap to add' : `${done} of ${ts.length} task${ts.length !== 1 ? 's' : ''} completed`
-          )
-        );
-      })
+  // ── Snackbar ──
+  function Snackbar({ message, onUndo, onClose }) {
+    useEffect(() => {
+      const t = setTimeout(onClose, onUndo ? 6000 : 3200);
+      return () => clearTimeout(t);
+    }, []);
+    return h('div', { className: 'snackbar', role: 'status', 'aria-live': 'polite' },
+      h('span', { className: 'snackbar-msg' }, message),
+      onUndo && h('button', { className: 'snackbar-undo', onClick: () => { onUndo(); onClose(); } }, 'Undo'),
+      h('button', { className: 'snackbar-undo', onClick: onClose, 'aria-label': 'Dismiss' }, 'Dismiss')
     );
   }
 
+  // ── Lists View ──
+  function ListView({ lists, tasks, listProgress, COLORS, search, onSearch, categories, onOpen, onEdit, onDelete }) {
+    const q = (search || '').trim().toLowerCase();
+    const filtered = q
+      ? lists.filter(l => l.title.toLowerCase().includes(q) || (tasks(l.id) || []).some(t => t.text.toLowerCase().includes(q)))
+      : lists;
+
+    const searchBar = lists.length > 0 && h('div', { className: 'search-wrap' },
+      h('span', { className: 'search-icon' }, h(IconSearch, { size: 17 })),
+      h('input', {
+        type: 'text', className: 'search-input', placeholder: 'Search lists and tasks…',
+        enterKeyHint: 'search', autoComplete: 'off', autoCapitalize: 'none', spellCheck: false,
+        value: search || '', onChange: e => onSearch(e.target.value), 'aria-label': 'Search lists and tasks'
+      }),
+      (search || '') !== '' && h('button', { className: 'search-clear', 'aria-label': 'Clear search', onClick: () => onSearch('') }, h(IconX, { size: 16 }))
+    );
+
+    if (!lists.length) return h('div', null,
+      searchBar,
+      h('div', { className: 'empty-state' },
+        h('div', { className: 'empty-icon' }, h(IconCheckSq, { size: 56 })),
+        h('div', { className: 'empty-title' }, 'No checklists yet'),
+        h('div', { className: 'empty-sub' }, 'Tap the + button below\nto create your first checklist')
+      )
+    );
+
+    const renderCard = (list, i) => {
+      const ts = tasks(list.id) || [];
+      const done = ts.filter(t => t.done).length;
+      const pct = listProgress(list.id);
+      const color = COLORS.find(c => c.id === list.color)?.val || '#e94560';
+      const complete = ts.length > 0 && done === ts.length;
+
+      return h('div', {
+        key: list.id, className: 'list-card', role: 'button', tabIndex: 0,
+        style: { animationDelay: Math.min(i, 8) * 0.05 + 's' },
+        'aria-label': list.title + ', ' + (ts.length === 0 ? 'no tasks' : `${done} of ${ts.length} tasks completed`),
+        onClick: () => onOpen(list.id),
+        onKeyDown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(list.id); } },
+      },
+        h('div', { style: { position:'absolute', left:0, top:0, bottom:0, width:4, background: color, borderRadius:'4px 0 0 4px' } }),
+        h('div', { className: 'list-card-header' },
+          h('div', { className: 'list-card-title' }, list.title),
+          h('div', { style: { display:'flex', alignItems:'center', gap:8 } },
+            complete ? h('span', { className: 'done-badge', title: 'All done' }, h(IconCheckCircle, { size: 30 })) : h(Ring, { pct, color }),
+            h('div', { className: 'list-card-actions', onClick: e => e.stopPropagation() },
+              h('button', { className: 'icon-btn', onClick: () => onEdit(list), 'aria-label': 'Edit ' + list.title, title: 'Edit' }, h(IconPencil, { size: 18 })),
+              h('button', { className: 'icon-btn danger', onClick: () => onDelete(list), 'aria-label': 'Delete ' + list.title, title: 'Delete' }, h(IconTrash, { size: 18 }))
+            )
+          )
+        ),
+        h('div', { className: 'task-count' },
+          ts.length === 0 ? 'No tasks yet — tap to add' : `${done} of ${ts.length} task${ts.length !== 1 ? 's' : ''} completed`)
+      );
+    };
+
+    const body = [];
+    if (q) {
+      if (!filtered.length) {
+        body.push(h('div', { className: 'empty-state', key: 'nores' },
+          h('div', { className: 'empty-icon' }, h(IconSearch, { size: 48 })),
+          h('div', { className: 'empty-title' }, 'No matches'),
+          h('div', { className: 'empty-sub' }, 'Try a different search term')
+        ));
+      } else {
+        body.push(h('div', { className: 'lists-grid', key: 'grid' }, ...filtered.map(renderCard)));
+      }
+    } else if (categories.length) {
+      // Group by category, uncategorized last
+      const groups = {};
+      lists.forEach(l => { const c = l.category || ''; (groups[c] = groups[c] || []).push(l); });
+      const order = Object.keys(groups).sort((a,b) => (a === '' ? 1 : b === '' ? -1 : a.localeCompare(b)));
+      let idx = 0;
+      order.forEach(cat => {
+        body.push(h('div', { className: 'category-heading', key: 'h_' + (cat || 'none') }, cat || 'Uncategorized'));
+        body.push(h('div', { className: 'lists-grid', key: 'g_' + (cat || 'none') }, ...groups[cat].map(l => renderCard(l, idx++))));
+      });
+    } else {
+      body.push(h('div', { className: 'lists-grid', key: 'grid' }, ...lists.map(renderCard)));
+    }
+
+    return h('div', null, searchBar, ...body);
+  }
+
   // ── Tasks View ──
-  function TasksView({ list, tasks, allTasks, filter, search, onBack, onFilterChange, onSearch, onToggle, onEdit, onDelete, onClearDone, onPhotoView }) {
+  function TasksView({ list, tasks, allTasks, filter, search, lists, onBack, onFilterChange, onSearch, onToggle, onEdit, onDelete, onSwipeDelete, onClearDone, onPhotoView, onQuickAdd, onOpenDetails, onReorder, onBatchComplete, onBatchDelete, onBatchMove, onOpenListMenu }) {
+    const [quick, setQuick] = useState('');
+    const [selectMode, setSelectMode] = useState(false);
+    const [selected, setSelected] = useState([]);
+    const [swipe, setSwipe] = useState(null);
+    const [draggingId, setDraggingId] = useState(null);
+
+    const swipeStart = useRef(null);
+    const dragRef = useRef(null);
+    const itemRefs = useRef({});
+    const tasksRef = useRef(tasks);
+    tasksRef.current = tasks;
+    const reorderRef = useRef(onReorder);
+    reorderRef.current = onReorder;
+    const openMoveRef = useRef(null);
+
+    useEffect(() => { setSelectMode(false); setSelected([]); setSwipe(null); }, [list && list.id]);
+
     if (!list) return null;
+
     const done = allTasks.filter(t => t.done).length;
     const total = allTasks.length;
     const allDone = total > 0 && done === total;
     const hasDone = allTasks.some(t => t.done);
+    const searching = (search || '').trim() !== '';
 
-    // ── Swipe-to-complete ──
-    const swipeRef = useRef({});
-    const handleTouchStart = (e, taskId) => {
-      swipeRef.current[taskId] = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    const toggleSelect = (id) => { if (navigator.vibrate) navigator.vibrate(12); setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]); };
+    const exitSelect = () => { setSelectMode(false); setSelected([]); };
+
+    // ── Swipe-to-complete (right) / swipe-to-delete (left), with live feedback ──
+    const clampSwipe = (dx) => Math.max(-150, Math.min(150, dx));
+    const onPointerDown = (e, taskId) => {
+      if (selectMode) return;
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      swipeStart.current = { id: taskId, x: e.clientX, y: e.clientY, locked: false };
     };
-    const handleTouchEnd = (e, taskId) => {
-      const start = swipeRef.current[taskId];
-      if (!start) return;
-      const dx = e.changedTouches[0].clientX - start.x;
-      const dy = Math.abs(e.changedTouches[0].clientY - start.y);
-      if (dx > 64 && dy < 40) { onToggle(taskId); }
-      delete swipeRef.current[taskId];
+    const onPointerMove = (e, taskId) => {
+      const s = swipeStart.current;
+      if (!s || s.id !== taskId || s.locked) {
+        if (s && s.id === taskId && s.locked) {
+          setSwipe({ id: taskId, dx: clampSwipe(e.clientX - s.x) });
+        }
+        return;
+      }
+      const dx = e.clientX - s.x;
+      const dy = e.clientY - s.y;
+      if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
+        s.locked = true;
+        try { e.currentTarget.setPointerCapture(e.pointerId); } catch(_) {}
+        if (navigator.vibrate) navigator.vibrate(10);
+        setSwipe({ id: taskId, dx: clampSwipe(dx) });
+      } else if (Math.abs(dy) > 12) {
+        swipeStart.current = null;
+      }
+    };
+    const endSwipe = (e, task) => {
+      const s = swipeStart.current;
+      if (s && s.locked && s.id === task.id) {
+        const dx = e.clientX - s.x;
+        if (dx > 72) onToggle(task.id);
+        else if (dx < -72) { if (navigator.vibrate) navigator.vibrate(30); onSwipeDelete(task); }
+      }
+      swipeStart.current = null;
+      setSwipe(null);
+    };
+    const cancelSwipe = () => { swipeStart.current = null; setSwipe(null); };
+
+    // ── Drag-to-reorder ──
+    const onDragMove = useCallback((e) => {
+      const d = dragRef.current;
+      if (!d) return;
+      e.preventDefault();
+      const y = e.clientY;
+      const listArr = tasksRef.current;
+      let targetId = null;
+      for (let i = 0; i < listArr.length; i++) {
+        const el = itemRefs.current[listArr[i].id];
+        if (!el) continue;
+        const r = el.getBoundingClientRect();
+        if (y < r.top + r.height / 2) { targetId = listArr[i].id; break; }
+      }
+      if (!targetId) targetId = listArr[listArr.length - 1].id;
+      if (targetId && targetId !== d.overId) {
+        d.overId = targetId;
+        reorderRef.current(d.id, targetId);
+      }
+    }, []);
+    const endDrag = useCallback(() => {
+      window.removeEventListener('pointermove', onDragMove);
+      window.removeEventListener('pointerup', endDrag);
+      window.removeEventListener('pointercancel', endDrag);
+      dragRef.current = null;
+      setDraggingId(null);
+      if (navigator.vibrate) navigator.vibrate(12);
+    }, [onDragMove]);
+    const startDrag = (e, task) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (navigator.vibrate) navigator.vibrate(18);
+      dragRef.current = { id: task.id, overId: task.id };
+      setDraggingId(task.id);
+      window.addEventListener('pointermove', onDragMove, { passive: false });
+      window.addEventListener('pointerup', endDrag);
+      window.addEventListener('pointercancel', endDrag);
     };
 
-    return React.createElement(React.Fragment, null,
-      React.createElement('div', { className: 'tasks-header' },
-        React.createElement('button', { className: 'back-btn', onClick: onBack }, '←'),
-        React.createElement('div', { className: 'tasks-header-text' },
-          React.createElement('div', { className: 'tasks-title' }, list.title),
-          React.createElement('div', { className: 'tasks-subtitle' }, `${done}/${total} done`)
-        ),
-        hasDone && React.createElement('button', {
-          className: 'clear-done-btn',
-          onClick: onClearDone,
-          title: 'Clear completed tasks'
-        }, React.createElement(IconBroom, {size:14}), ' Clear done')
+    const submitQuick = () => {
+      const t = quick.trim();
+      if (!t) return;
+      onQuickAdd(t);
+      setQuick('');
+    };
+
+    const batch = (fn) => { fn(selected); exitSelect(); };
+
+    const selectHeader = h('div', { className: 'tasks-header' },
+      h('button', { className: 'btn-cancel', style: { flex:'0 0 auto', padding:'0 18px', minHeight:44, borderRadius:50 }, onClick: exitSelect }, 'Cancel'),
+      h('div', { className: 'tasks-header-text' },
+        h('div', { className: 'tasks-title' }, selected.length + ' selected')
       ),
-      allDone && React.createElement('div', { className: 'all-done-banner' },
-        React.createElement('span', { style: { fontSize: 22, display:'flex', alignItems:'center', color:'#00bfa5' } }, React.createElement(IconStar, {size:22})),
-        ' All tasks completed!'
-      ),
-      React.createElement('div', { className: 'search-wrap' },
-        React.createElement('span', { className: 'search-icon' }, React.createElement(IconSearch, {size:17})),
-        React.createElement('input', {
-          type: 'text', className: 'search-input', placeholder: 'Search tasks…',
-          value: search, onChange: e => onSearch(e.target.value)
-        })
-      ),
-      React.createElement('div', { className: 'task-filters' },
-        ['all', 'active', 'done'].map(f =>
-          React.createElement('button', {
-            key: f, className: 'filter-pill' + (filter === f ? ' active' : ''),
-            onClick: () => onFilterChange(f)
-          }, f === 'all' ? 'All' : f === 'active' ? `Active` : `Done${hasDone ? ' (' + done + ')' : ''}`)
-        )
-      ),
-      tasks.length === 0
-        ? React.createElement('div', { className: 'empty-state' },
-            React.createElement('div', { className: 'empty-icon' }, filter === 'done' ? React.createElement(IconStar, {size:56}) : React.createElement(IconNote, {size:56})),
-            React.createElement('div', { className: 'empty-title' }, filter === 'done' ? 'Nothing done yet!' : 'All clear!'),
-            React.createElement('div', { className: 'empty-sub' }, filter === 'all' ? 'Tap + to add your first task' : `No ${filter} tasks`)
-          )
-        : React.createElement(React.Fragment, null,
-            React.createElement('div', { className: 'swipe-hint' }, '← Swipe right on a task to check it off →'),
-            React.createElement('div', { className: 'tasks-list' },
-              ...tasks.map((task, i) => {
-                const photos = task.photos || [];
-                return React.createElement('div', {
-                  key: task.id,
-                  className: 'task-item' + (task.done ? ' done' : ''),
-                  style: { animationDelay: i * 0.04 + 's' },
-                  onTouchStart: (e) => handleTouchStart(e, task.id),
-                  onTouchEnd: (e) => handleTouchEnd(e, task.id),
+      h('button', { className: 'header-icon', title: 'Complete selected', 'aria-label': 'Complete selected', disabled: !selected.length, onClick: () => selected.length && batch(onBatchComplete), style: { opacity: selected.length ? 1 : 0.4 } }, h(IconCheckCircle, { size: 20 })),
+      h('button', { className: 'header-icon', title: 'Move selected', 'aria-label': 'Move selected', disabled: !selected.length, onClick: () => selected.length && openMoveRef.current(selected), style: { opacity: selected.length ? 1 : 0.4 } }, h(IconFolder, { size: 20 })),
+      h('button', { className: 'header-icon', title: 'Delete selected', 'aria-label': 'Delete selected', disabled: !selected.length, onClick: () => selected.length && batch(onBatchDelete), style: { opacity: selected.length ? 1 : 0.4, color: selected.length ? '#e53935' : undefined } }, h(IconTrash, { size: 20 }))
+    );
+
+    function renderTaskList() {
+      if (tasks.length === 0) {
+        return h('div', { className: 'empty-state' },
+          h('div', { className: 'empty-icon' }, filter === 'done' ? h(IconStar, { size: 56 }) : h(IconNote, { size: 56 })),
+          h('div', { className: 'empty-title' }, searching ? 'No matches' : filter === 'done' ? 'Nothing done yet!' : 'All clear!'),
+          h('div', { className: 'empty-sub' }, searching ? 'Try a different search term' : filter === 'all' ? 'Add your first item above' : `No ${filter} tasks`)
+        );
+      }
+      return h(React.Fragment, null,
+        h('div', { className: 'tasks-list' },
+          ...tasks.map((task, i) => {
+            const photos = task.photos || [];
+            const s = swipe && swipe.id === task.id ? swipe : null;
+            const isDragging = draggingId === task.id;
+            const overdue = task.due && !task.done && task.due < startOfToday();
+            const canDrag = !task.done && filter !== 'done';
+            const isSel = selected.includes(task.id);
+
+            return h('div', {
+                key: task.id, className: 'task-swipe-wrap',
+                style: { animationDelay: Math.min(i, 10) * 0.03 + 's', animation: 'fadeUp 0.25s ease both' }
+              },
+              h('div', { className: 'task-swipe-bg' + (s && s.dx < 0 ? ' delete' : ''), 'aria-hidden':'true' },
+                s && s.dx < 0 ? h(IconTrash, { size: 26 }) : h(IconCheck, { size: 26 })),
+              h('div', {
+                ref: el => { itemRefs.current[task.id] = el; },
+                className: 'task-item' + (task.done ? ' done' : '') + (isDragging ? ' dragging' : ''),
+                style: {
+                  transform: s ? 'translateX(' + s.dx + 'px)' : 'translateX(0)',
+                  transition: s ? 'none' : 'transform 0.2s ease, background 0.2s ease',
+                  cursor: selectMode ? 'pointer' : 'default',
                 },
-                  // Main row
-                  React.createElement('div', { className: 'task-item-main' },
-                    React.createElement('div', {
-                      className: 'task-check' + (task.done ? ' checked' : ''),
-                      onClick: () => onToggle(task.id)
-                    }, task.done ? React.createElement(IconCheck, {size:15}) : ''),
-                    React.createElement('div', { className: 'task-text' }, task.text),
-                    React.createElement('div', { style: { display:'flex', gap:6 } },
-                      React.createElement('button', { className: 'icon-btn', onClick: () => onEdit(task) }, React.createElement(IconPencil, {size:18})),
-                      React.createElement('button', { className: 'icon-btn danger', onClick: () => onDelete(task) }, React.createElement(IconTrash, {size:18}))
+                onClick: selectMode ? () => toggleSelect(task.id) : undefined,
+              },
+                h('div', {
+                  className: 'task-item-main',
+                  onPointerDown: (e) => onPointerDown(e, task.id),
+                  onPointerMove: (e) => onPointerMove(e, task.id),
+                  onPointerUp: (e) => endSwipe(e, task),
+                  onPointerCancel: cancelSwipe,
+                },
+                  selectMode
+                    ? h('div', { className: 'task-check select' + (isSel ? ' checked' : ''), role: 'checkbox', 'aria-checked': isSel, 'aria-label': 'Select ' + task.text }, isSel ? h(IconCheck, { size: 15 }) : '')
+                    : h('button', {
+                        className: 'task-check' + (task.done ? ' checked' : ''),
+                        role: 'checkbox', 'aria-checked': !!task.done, 'aria-label': (task.done ? 'Mark incomplete: ' : 'Mark complete: ') + task.text,
+                        onClick: (e) => { e.stopPropagation(); onToggle(task.id); }
+                      }, task.done ? h(IconCheck, { size: 15 }) : ''),
+                  h('div', { className: 'task-body' },
+                    h('div', { className: 'task-text' }, task.text),
+                    ((task.due) || (task.priority && task.priority !== 'none')) && h('div', { className: 'task-meta' },
+                      task.due && h('span', { className: 'badge badge-due' + (overdue ? ' overdue' : '') }, h(IconCalendar, { size: 12 }), (overdue ? 'Overdue ' : '') + formatDate(task.due)),
+                      task.priority && task.priority !== 'none' && h('span', { className: 'badge badge-pri-' + task.priority }, h(IconFlag, { size: 12 }), PRIORITIES.find(p => p.id === task.priority)?.label)
                     )
                   ),
-                  // Photo strip
-                  photos.length > 0 && React.createElement('div', { className: 'task-photos' },
-                    ...photos.map((src, pi) =>
-                      React.createElement('img', {
-                        key: pi,
-                        src, alt: 'attachment',
-                        className: 'task-photo-thumb',
-                        onClick: () => onPhotoView(photos, pi),
-                      })
-                    )
+                  !selectMode && h('div', { style: { display:'flex', gap:6, alignItems:'center' } },
+                    h('button', { className: 'icon-btn', title: 'Edit', 'aria-label': 'Edit task ' + task.text, onClick: (e) => { e.stopPropagation(); onEdit(task); } }, h(IconPencil, { size: 18 })),
+                    h('button', { className: 'icon-btn danger', title: 'Delete', 'aria-label': 'Delete task ' + task.text, onClick: (e) => { e.stopPropagation(); onDelete(task); } }, h(IconTrash, { size: 18 })),
+                    canDrag && h('button', {
+                      className: 'drag-handle', title: 'Drag to reorder', 'aria-label': 'Reorder ' + task.text,
+                      onPointerDown: (e) => startDrag(e, task),
+                      onTouchStart: (e) => e.stopPropagation(),
+                    }, h(IconGrip, { size: 20 }))
                   )
-                );
-              })
-            )
-          )
-    );
-  }
-
-  // ── Modal Layer ──
-  function ModalLayer({ modal, COLORS, onClose, onCreate, onUpdate, onConfirmDelete }) {
-    const handleOverlayClick = (e) => { if (e.target === e.currentTarget) onClose(); };
-
-    let content;
-
-    if (modal.type === 'newList' || modal.type === 'editList') {
-      content = React.createElement(ListFormModal, {
-        COLORS, existing: modal.list,
-        onClose,
-        onSubmit: (payload) => { modal.type === 'newList' ? onCreate(payload) : onUpdate(payload); onClose(); }
-      });
-    } else if (modal.type === 'newTask' || modal.type === 'editTask') {
-      content = React.createElement(TaskFormModal, {
-        existing: modal.task,
-        onClose,
-        onSubmit: (payload) => { modal.type === 'newTask' ? onCreate(payload) : onUpdate(payload); onClose(); }
-      });
-    } else if (modal.type === 'deleteList' || modal.type === 'deleteTask') {
-      const isTask = modal.type === 'deleteTask';
-      content = React.createElement('div', { className: 'modal delete-modal' },
-        React.createElement('div', { className: 'modal-handle' }),
-        React.createElement('div', { className: 'delete-icon' }, React.createElement(IconTrash, {size:40})),
-        React.createElement('div', { className: 'delete-title' }, isTask ? 'Delete Task?' : 'Delete List?'),
-        React.createElement('div', { className: 'delete-sub' },
-          isTask
-            ? `"${modal.task.text}" will be permanently removed.`
-            : `"${modal.list.title}" and all its tasks will be permanently deleted.`
-        ),
-        React.createElement('div', { className: 'modal-actions' },
-          React.createElement('button', { className: 'btn-cancel', onClick: onClose }, 'Cancel'),
-          React.createElement('button', {
-            className: 'btn-confirm',
-            style: { background: 'linear-gradient(135deg,#ff1744,#ff6d00)', borderRadius: '50px', boxShadow: '0 4px 18px rgba(255,23,68,0.35)' },
-            onClick: () => { onConfirmDelete(); onClose(); }
-          }, 'Delete')
+                ),
+                photos.length > 0 && h('div', { className: 'task-photos' },
+                  ...photos.map((src, pi) =>
+                    h('img', { key: pi, src, alt: 'Attachment for ' + task.text, className: 'task-photo-thumb', onClick: (e) => { e.stopPropagation(); onPhotoView(photos, pi); } })
+                  )
+                )
+              )
+            );
+          })
         )
       );
     }
 
-    return React.createElement('div', { className: 'modal-overlay', onClick: handleOverlayClick }, content);
+    const normalHeader = h('div', { className: 'tasks-header' },
+      h('button', { className: 'back-btn', onClick: onBack, 'aria-label': 'Back to lists' }, '\u2190'),
+      h('div', { className: 'tasks-header-text' },
+        h('div', { className: 'tasks-title' }, list.title),
+        h('div', { className: 'tasks-subtitle' }, `${done}/${total} done`)
+      ),
+      hasDone && h('button', { className: 'clear-done-btn', onClick: onClearDone, title: 'Clear completed tasks' }, h(IconBroom, { size: 14 }), ' Clear'),
+      h('button', { className: 'header-icon', title: 'Checklist options', 'aria-label': 'Checklist options', onClick: onOpenListMenu }, h(IconDots, { size: 20 }))
+    );
+
+    return h(React.Fragment, null,
+      selectMode ? selectHeader : normalHeader,
+      !selectMode && allDone && h('div', { className: 'all-done-banner' },
+        h('span', { style: { display:'flex', alignItems:'center' } }, h(IconStar, { size: 22 })),
+        ' All tasks completed!'
+      ),
+      !selectMode && h('div', { className: 'quick-add' },
+        h('input', {
+          type: 'text', value: quick, placeholder: 'Add a task…',
+          'aria-label': 'Add a task',
+          enterKeyHint: 'done', autoComplete: 'off', autoCapitalize: 'sentences',
+          onChange: e => setQuick(e.target.value),
+          onKeyDown: e => { if (e.key === 'Enter') submitQuick(); }
+        }),
+        h('button', { className: 'quick-add-detail', title: 'Add with details', 'aria-label': 'Add with details', onClick: () => onOpenDetails(quick.trim()) }, h(IconCamera, { size: 18 })),
+        h('button', { className: 'quick-add-btn', title: 'Add task', 'aria-label': 'Add task', onClick: submitQuick }, h(IconPlus, { size: 20 }))
+      ),
+      !selectMode && h('div', { className: 'search-wrap' },
+        h('span', { className: 'search-icon' }, h(IconSearch, { size: 17 })),
+        h('input', {
+          type: 'text', className: 'search-input', placeholder: 'Search tasks…',
+          enterKeyHint: 'search', autoComplete: 'off', autoCapitalize: 'none', spellCheck: false,
+          value: search, onChange: e => onSearch(e.target.value), 'aria-label': 'Search tasks'
+        }),
+        searching && h('button', { className: 'search-clear', 'aria-label': 'Clear search', onClick: () => onSearch('') }, h(IconX, { size: 16 }))
+      ),
+      !selectMode && searching && h('div', { className: 'result-count' }, tasks.length + ' result' + (tasks.length !== 1 ? 's' : '')),
+      !selectMode && h('div', { className: 'task-filters' },
+        ['all', 'active', 'done'].map(f =>
+          h('button', {
+            key: f, className: 'filter-pill' + (filter === f ? ' active' : ''),
+            'aria-pressed': filter === f,
+            onClick: () => onFilterChange(f)
+          }, f === 'all' ? 'All' : f === 'active' ? 'Active' : 'Done')
+        ),
+        total > 0 && h('button', { className: 'select-toggle', onClick: () => setSelectMode(true) }, h(IconSelect, { size: 18 }), 'Select')
+      ),
+      selectMode && h('div', { className: 'swipe-hint' }, selected.length ? 'Tap items to add or remove from selection' : 'Select items to take action'),
+      !selectMode && tasks.length > 0 && h('div', { className: 'swipe-hint' }, 'Swipe a task right to complete it'),
+      renderTaskList(),
+      h(MovePickerHost, { ref: openMoveRef, lists, currentListId: list.id, onPick: (ids, toId) => { onBatchMove(ids, toId); exitSelect(); } })
+    );
   }
 
-  // ── List Form Modal ──
-  function ListFormModal({ COLORS, existing, onClose, onSubmit }) {
-    const [title, setTitle] = useState(existing?.title || '');
-    const [color, setColor] = useState(existing?.color || 'red');
-    const inputRef = useRef();
-    useEffect(() => { setTimeout(() => inputRef.current?.focus(), 100); }, []);
+  // Host that exposes an imperative open() via ref (renders nothing itself).
+  const MovePickerHost = React.forwardRef(function MovePickerHost({ lists, currentListId, onPick }, ref) {
+    const [pending, setPending] = useState(null);
+    React.useImperativeHandle(ref, () => (ids) => setPending(ids), []);
+    if (!pending) return null;
+    return h(MovePicker, {
+      lists, currentListId,
+      onCancel: () => setPending(null),
+      onPick: (toId) => { onPick(pending, toId); setPending(null); },
+    });
+  });
 
-    const handleSubmit = () => {
-      if (!title.trim()) return;
-      onSubmit({ title: title.trim(), color });
-    };
-
-    return React.createElement('div', { className: 'modal' },
-      React.createElement('div', { className: 'modal-handle' }),
-      React.createElement('div', { className: 'modal-title' }, existing ? 'Edit Checklist' : 'New Checklist'),
-      React.createElement('div', { className: 'form-group' },
-        React.createElement('label', { className: 'form-label' }, 'Title'),
-        React.createElement('input', {
-          ref: inputRef, className: 'form-input', placeholder: 'e.g. Grocery Shopping…',
-          value: title, onChange: e => setTitle(e.target.value),
-          onKeyDown: e => e.key === 'Enter' && handleSubmit()
-        })
-      ),
-      React.createElement('div', { className: 'form-group' },
-        React.createElement('label', { className: 'form-label' }, 'Color'),
-        React.createElement('div', { className: 'color-picker' },
-          ...COLORS.map(c =>
-            React.createElement('div', {
-              key: c.id, className: 'color-dot' + (color === c.id ? ' selected' : ''),
-              style: { background: c.val },
-              onClick: () => setColor(c.id)
-            }, color === c.id ? React.createElement('span', { style: { color:'white', display:'flex', alignItems:'center', justifyContent:'center' } }, React.createElement(IconCheck, {size:14})) : null)
-          )
+  function MovePicker({ lists, currentListId, onCancel, onPick }) {
+    const targetRef = useModalA11y(onCancel);
+    const { nodeRef, onDown } = useSheetDrag(onCancel);
+    const setRef = (el) => { targetRef.current = el; nodeRef.current = el; };
+    const others = lists.filter(l => l.id !== currentListId);
+    return h('div', { className: 'modal-overlay', onClick: e => { if (e.target === e.currentTarget) onCancel(); } },
+      h('div', { className: 'modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Move tasks', ref: setRef },
+        h('div', { className: 'modal-handle-hit', onPointerDown: onDown },
+          h('div', { className: 'modal-handle' })
+        ),
+        h('div', { className: 'modal-title' }, 'Move to…'),
+        others.length === 0
+          ? h('div', { className: 'form-hint' }, 'You only have one checklist. Create another first.')
+          : h('div', { className: 'menu-list' },
+              ...others.map(l =>
+                h('button', { key: l.id, className: 'menu-item', onClick: () => onPick(l.id) },
+                  h(IconList, { size: 18 }), h('div', null, l.title))
+              )
+            ),
+        h('div', { className: 'modal-actions' },
+          h('button', { className: 'btn-cancel', onClick: onCancel }, 'Cancel')
         )
-      ),
-      React.createElement('div', { className: 'modal-actions' },
-        React.createElement('button', { className: 'btn-cancel', onClick: onClose }, 'Cancel'),
-        React.createElement('button', { className: 'btn-confirm', onClick: handleSubmit, disabled: !title.trim() }, existing ? 'Save' : 'Create')
       )
     );
   }
 
-  // ── Task Form Modal ──
-  function TaskFormModal({ existing, onClose, onSubmit }) {
-    const [text, setText] = useState(existing?.text || '');
+  // ── Modal Layer ──
+  function ModalLayer({ modal, COLORS, PRIORITIES, lists, onClose, onCreate, onUpdate, onConfirmDelete, onDuplicate, onReset, onBatchMove, onExport, onImport, onClearAll, onEditList, onDeleteList }) {
+    if (modal.type === 'newList' || modal.type === 'editList') {
+      return h(ListFormModal, {
+        COLORS, existing: modal.list, lists, onClose,
+        onSubmit: (payload) => { modal.type === 'newList' ? onCreate(payload) : onUpdate(payload); onClose(); }
+      });
+    }
+    if (modal.type === 'newTask' || modal.type === 'editTask') {
+      return h(TaskFormModal, {
+        PRIORITIES, existing: modal.task, prefill: modal.prefill, onClose,
+        onSubmit: (payload) => { modal.type === 'newTask' ? onCreate(payload) : onUpdate(payload); onClose(); }
+      });
+    }
+    if (modal.type === 'deleteList' || modal.type === 'deleteTask') {
+      const isTask = modal.type === 'deleteTask';
+      return h(DeleteModal, { isTask, modal, onClose, onConfirmDelete });
+    }
+    if (modal.type === 'listMenu') {
+      return h(ListMenuModal, {
+        list: modal.list, onClose, onDuplicate, onReset,
+        onEdit: () => onEditList(modal.list),
+        onDelete: () => onDeleteList(modal.list),
+      });
+    }
+    if (modal.type === 'settings') {
+      return h(SettingsModal, { onClose, onExport, onImport, onClearAll });
+    }
+    return null;
+  }
+
+  function ModalShell({ onClose, label, children, className }) {
+    const ref = useModalA11y(onClose);
+    const { nodeRef, onDown } = useSheetDrag(onClose);
+    const setRef = (el) => { ref.current = el; nodeRef.current = el; };
+    return h('div', { className: 'modal-overlay', onClick: e => { if (e.target === e.currentTarget) onClose(); } },
+      h('div', { className: 'modal' + (className ? ' ' + className : ''), role: 'dialog', 'aria-modal': 'true', 'aria-label': label, ref: setRef },
+        h('div', { className: 'modal-handle-hit', onPointerDown: onDown },
+          h('div', { className: 'modal-handle' })
+        ),
+        children
+      )
+    );
+  }
+
+  function DeleteModal({ isTask, modal, onClose, onConfirmDelete }) {
+    return h(ModalShell, { onClose, label: isTask ? 'Delete task' : 'Delete checklist', className: 'delete-modal' },
+      h('div', { className: 'delete-icon' }, h(IconTrash, { size: 40 })),
+      h('div', { className: 'delete-title' }, isTask ? 'Delete Task?' : 'Delete Checklist?'),
+      h('div', { className: 'delete-sub' },
+        isTask ? `"${modal.task.text}" will be removed.` : `"${modal.list.title}" and all its tasks will be removed.`
+      ),
+      h('div', { className: 'modal-actions' },
+        h('button', { className: 'btn-cancel', onClick: onClose }, 'Cancel'),
+        h('button', { className: 'btn-confirm danger', onClick: () => { onConfirmDelete(); onClose(); } }, 'Delete')
+      )
+    );
+  }
+
+  function ListFormModal({ COLORS, existing, lists, onClose, onSubmit }) {
+    const [title, setTitle] = useState(existing?.title || '');
+    const [color, setColor] = useState(existing?.color || 'red');
+    const [category, setCategory] = useState(existing?.category || '');
+    const inputRef = useRef();
+    const catOptions = Array.from(new Set(lists.map(l => l.category).filter(Boolean)));
+    useEffect(() => { const t = setTimeout(() => inputRef.current?.focus(), 120); return () => clearTimeout(t); }, []);
+
+    const handleSubmit = () => {
+      if (!title.trim()) return;
+      onSubmit({ title: title.trim(), color, category: category.trim() });
+    };
+
+    return h(ModalShell, { onClose, label: existing ? 'Edit checklist' : 'New checklist' },
+      h('div', { className: 'modal-title' }, existing ? 'Edit Checklist' : 'New Checklist'),
+      h('div', { className: 'form-group' },
+        h('label', { className: 'form-label' }, 'Title'),
+        h('input', {
+          ref: inputRef, className: 'form-input', placeholder: 'e.g. Grocery Shopping…',
+          value: title, onChange: e => setTitle(e.target.value),
+          enterKeyHint: 'done', autoComplete: 'off', autoCapitalize: 'sentences',
+          onKeyDown: e => e.key === 'Enter' && handleSubmit()
+        })
+      ),
+      h('div', { className: 'form-group' },
+        h('label', { className: 'form-label' }, 'Category (optional)'),
+        h('input', {
+          className: 'form-input', placeholder: 'e.g. Work, Home…', list: 'cm-categories',
+          value: category, onChange: e => setCategory(e.target.value)
+        }),
+        h('datalist', { id: 'cm-categories' }, ...catOptions.map(c => h('option', { key: c, value: c })))
+      ),
+      h('div', { className: 'form-group' },
+        h('label', { className: 'form-label' }, 'Color'),
+        h('div', { className: 'color-picker', role: 'radiogroup', 'aria-label': 'Checklist color' },
+          ...COLORS.map(c =>
+            h('button', {
+              key: c.id, type: 'button', className: 'color-dot' + (color === c.id ? ' selected' : ''),
+              style: { background: c.val }, role: 'radio', 'aria-checked': color === c.id,
+              'aria-label': c.name, title: c.name,
+              onClick: () => setColor(c.id)
+            }, color === c.id ? h('span', { style: { color:'#fff', display:'flex' } }, h(IconCheck, { size: 16 })) : null)
+          )
+        )
+      ),
+      h('div', { className: 'modal-actions' },
+        h('button', { className: 'btn-cancel', onClick: onClose }, 'Cancel'),
+        h('button', { className: 'btn-confirm', onClick: handleSubmit, disabled: !title.trim() }, existing ? 'Save' : 'Create')
+      )
+    );
+  }
+
+  function TaskFormModal({ PRIORITIES, existing, prefill, onClose, onSubmit }) {
+    const [text, setText] = useState(existing?.text || prefill || '');
     const [photos, setPhotos] = useState(existing?.photos || []);
+    const [priority, setPriority] = useState(existing?.priority || 'none');
+    const [due, setDue] = useState(existing?.due || null);
     const inputRef = useRef();
     const cameraRef = useRef();
     const galleryRef = useRef();
-    useEffect(() => { setTimeout(() => inputRef.current?.focus(), 100); }, []);
+    useEffect(() => { const t = setTimeout(() => inputRef.current?.focus(), 120); return () => clearTimeout(t); }, []);
 
     const handleSubmit = () => {
       if (!text.trim()) return;
-      onSubmit({ text: text.trim(), photos });
+      onSubmit({ text: text.trim(), photos, priority, due });
     };
 
     const readFile = (file) => new Promise((res) => {
@@ -984,55 +1738,87 @@
 
     const removePhoto = (i) => setPhotos(prev => prev.filter((_, idx) => idx !== i));
 
-    return React.createElement('div', { className: 'modal' },
-      React.createElement('div', { className: 'modal-handle' }),
-      React.createElement('div', { className: 'modal-title' }, existing ? 'Edit Task' : 'New Task'),
-      React.createElement('div', { className: 'form-group' },
-        React.createElement('label', { className: 'form-label' }, 'Task'),
-        React.createElement('textarea', {
+    return h(ModalShell, { onClose, label: existing ? 'Edit task' : 'New task' },
+      h('div', { className: 'modal-title' }, existing ? 'Edit Task' : 'New Task'),
+      h('div', { className: 'form-group' },
+        h('label', { className: 'form-label' }, 'Task'),
+        h('textarea', {
           ref: inputRef, className: 'form-input', placeholder: 'What needs to be done?',
-          value: text, onChange: e => setText(e.target.value), rows: 3
+          value: text, onChange: e => setText(e.target.value), rows: 3,
+          enterKeyHint: 'done', autoComplete: 'off', autoCapitalize: 'sentences'
         })
       ),
-      // Photo section
-      React.createElement('div', { className: 'photo-section' },
-        React.createElement('label', { className: 'form-label' }, 'Photos'),
-        React.createElement('div', { className: 'photo-add-row' },
-          React.createElement('button', {
-            className: 'photo-add-btn',
-            onClick: () => cameraRef.current.click()
-          }, React.createElement(IconCamera, {size:17}), ' Camera'),
-          React.createElement('button', {
-            className: 'photo-add-btn',
-            onClick: () => galleryRef.current.click()
-          }, React.createElement(IconImage, {size:17}), ' Gallery'),
-          // hidden inputs
-          React.createElement('input', {
-            ref: cameraRef, type: 'file', accept: 'image/*',
-            capture: 'environment', style: { display:'none' },
-            onChange: handleFiles
-          }),
-          React.createElement('input', {
-            ref: galleryRef, type: 'file', accept: 'image/*',
-            multiple: true, style: { display:'none' },
-            onChange: handleFiles
-          })
+      h('div', { className: 'form-group' },
+        h('label', { className: 'form-label' }, 'Priority'),
+        h('div', { className: 'priority-picker', role: 'radiogroup', 'aria-label': 'Priority' },
+          h('button', { type:'button', className: 'priority-btn' + (priority === 'none' ? ' active' : ''), role:'radio', 'aria-checked': priority === 'none', onClick: () => setPriority('none') }, 'None'),
+          ...PRIORITIES.map(p =>
+            h('button', { key: p.id, type:'button', className: 'priority-btn' + (priority === p.id ? ' active' : ''), role:'radio', 'aria-checked': priority === p.id, onClick: () => setPriority(p.id) }, h(IconFlag, { size: 13 }), p.label)
+          )
+        )
+      ),
+      h('div', { className: 'form-group' },
+        h('label', { className: 'form-label' }, 'Due date (optional)'),
+        h('input', {
+          type: 'date', className: 'form-input', value: toDateInput(due),
+          onChange: e => setDue(fromDateInput(e.target.value))
+        })
+      ),
+      h('div', { className: 'photo-section' },
+        h('label', { className: 'form-label' }, 'Photos'),
+        h('div', { className: 'photo-add-row' },
+          h('button', { type:'button', className: 'photo-add-btn', onClick: () => cameraRef.current.click() }, h(IconCamera, { size: 17 }), ' Camera'),
+          h('button', { type:'button', className: 'photo-add-btn', onClick: () => galleryRef.current.click() }, h(IconImage, { size: 17 }), ' Gallery'),
+          h('input', { ref: cameraRef, type: 'file', accept: 'image/*', capture: 'environment', style: { display:'none' }, onChange: handleFiles }),
+          h('input', { ref: galleryRef, type: 'file', accept: 'image/*', multiple: true, style: { display:'none' }, onChange: handleFiles })
         ),
-        photos.length > 0 && React.createElement('div', { className: 'modal-photo-strip' },
+        photos.length > 0 && h('div', { className: 'modal-photo-strip' },
           ...photos.map((src, i) =>
-            React.createElement('div', { key: i, className: 'modal-photo-wrap' },
-              React.createElement('img', { src, alt: '', className: 'modal-photo-thumb' }),
-              React.createElement('button', {
-                className: 'modal-photo-remove',
-                onClick: () => removePhoto(i)
-              }, '×')
+            h('div', { key: i, className: 'modal-photo-wrap' },
+              h('img', { src, alt: 'Attachment ' + (i + 1), className: 'modal-photo-thumb' }),
+              h('button', { type:'button', className: 'modal-photo-remove', 'aria-label': 'Remove photo', onClick: () => removePhoto(i) }, '\u00d7')
             )
           )
         )
       ),
-      React.createElement('div', { className: 'modal-actions' },
-        React.createElement('button', { className: 'btn-cancel', onClick: onClose }, 'Cancel'),
-        React.createElement('button', { className: 'btn-confirm', onClick: handleSubmit, disabled: !text.trim() }, existing ? 'Save' : 'Add Task')
+      h('div', { className: 'modal-actions' },
+        h('button', { className: 'btn-cancel', onClick: onClose }, 'Cancel'),
+        h('button', { className: 'btn-confirm', onClick: handleSubmit, disabled: !text.trim() }, existing ? 'Save' : 'Add Task')
+      )
+    );
+  }
+
+  function ListMenuModal({ list, onClose, onDuplicate, onReset, onEdit, onDelete }) {
+    return h(ModalShell, { onClose, label: 'Checklist options' },
+      h('div', { className: 'modal-title' }, list.title),
+      h('div', { className: 'menu-list' },
+        h('button', { className: 'menu-item', onClick: () => { onClose(); onEdit(); } }, h(IconPencil, { size: 18 }), h('div', null, 'Edit details', h('div', { className: 'menu-item-sub' }, 'Title, category and color'))),
+        h('button', { className: 'menu-item', onClick: () => { onDuplicate(list.id); onClose(); } }, h(IconCopy, { size: 18 }), h('div', null, 'Duplicate', h('div', { className: 'menu-item-sub' }, 'Copy this checklist'))),
+        h('button', { className: 'menu-item', onClick: () => { onReset(list.id); onClose(); } }, h(IconRefresh, { size: 18 }), h('div', null, 'Reset checkboxes', h('div', { className: 'menu-item-sub' }, 'Uncheck every task'))),
+        h('button', { className: 'menu-item danger', onClick: () => { onClose(); onDelete(); } }, h(IconTrash, { size: 18 }), h('div', null, 'Delete checklist'))
+      ),
+      h('div', { className: 'modal-actions' },
+        h('button', { className: 'btn-cancel', onClick: onClose }, 'Close')
+      )
+    );
+  }
+
+  function SettingsModal({ onClose, onExport, onImport, onClearAll }) {
+    const fileRef = useRef();
+    return h(ModalShell, { onClose, label: 'Settings and backup' },
+      h('div', { className: 'modal-title' }, 'Settings & Backup'),
+      h('div', { className: 'menu-list' },
+        h('button', { className: 'menu-item', onClick: onExport }, h(IconDown, { size: 18 }), h('div', null, 'Export backup', h('div', { className: 'menu-item-sub' }, 'Download all data as JSON'))),
+        h('button', { className: 'menu-item', onClick: () => fileRef.current.click() }, h(IconUp, { size: 18 }), h('div', null, 'Import backup', h('div', { className: 'menu-item-sub' }, 'Restore from a JSON file'))),
+        h('button', { className: 'menu-item danger', onClick: () => { if (confirm('Delete ALL checklists and tasks? This can be undone once.')) { onClearAll(); onClose(); } } }, h(IconTrash, { size: 18 }), h('div', null, 'Clear all data'))
+      ),
+      h('input', {
+        ref: fileRef, type: 'file', accept: 'application/json', style: { display:'none' },
+        onChange: e => { const f = e.target.files && e.target.files[0]; if (f) { onImport(f); onClose(); } }
+      }),
+      h('div', { className: 'form-hint' }, 'Your data is stored privately on this device. Export regularly to keep a backup.'),
+      h('div', { className: 'modal-actions' },
+        h('button', { className: 'btn-cancel', onClick: onClose }, 'Close')
       )
     );
   }
@@ -1053,42 +1839,25 @@
       return () => window.removeEventListener('keydown', handler);
     }, []);
 
-    return React.createElement('div', { className: 'lightbox', onClick: onClose },
-      React.createElement('img', {
-        src: photos[idx], alt: '',
-        onClick: e => e.stopPropagation()
-      }),
-      React.createElement('button', { className: 'lightbox-close', onClick: onClose }, React.createElement(IconX, {size:20})),
-      photos.length > 1 && React.createElement('button', {
-        className: 'lightbox-nav prev',
-        onClick: (e) => { e.stopPropagation(); prev(); }
-      }, React.createElement(IconChevL, {size:22})),
-      photos.length > 1 && React.createElement('button', {
-        className: 'lightbox-nav next',
-        onClick: (e) => { e.stopPropagation(); next(); }
-      }, React.createElement(IconChevR, {size:22})),
-      photos.length > 1 && React.createElement('div', {
-        style: { position:'absolute', bottom:24, left:'50%', transform:'translateX(-50%)',
-          color:'rgba(255,255,255,0.7)', fontSize:13, fontWeight:600 }
-      }, `${idx + 1} / ${photos.length}`)
+    return h('div', { className: 'lightbox', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Photo viewer', onClick: onClose },
+      h('img', { src: photos[idx], alt: 'Photo ' + (idx + 1) + ' of ' + photos.length, onClick: e => e.stopPropagation() }),
+      h('button', { className: 'lightbox-close', onClick: onClose, 'aria-label': 'Close' }, h(IconX, { size: 20 })),
+      photos.length > 1 && h('button', { className: 'lightbox-nav prev', onClick: (e) => { e.stopPropagation(); prev(); }, 'aria-label': 'Previous photo' }, h(IconChevL, { size: 22 })),
+      photos.length > 1 && h('button', { className: 'lightbox-nav next', onClick: (e) => { e.stopPropagation(); next(); }, 'aria-label': 'Next photo' }, h(IconChevR, { size: 22 })),
+      photos.length > 1 && h('div', { style: { position:'absolute', bottom:24, left:'50%', transform:'translateX(-50%)', color:'rgba(255,255,255,0.75)', fontSize:13, fontWeight:600 } }, `${idx + 1} / ${photos.length}`)
     );
   }
 
-  ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+  ReactDOM.createRoot(document.getElementById('root')).render(h(App));
 
   // ── Service Worker registration + auto-update flow ──
   let pendingWorker = null;
 
-  function showToast() {
-    document.getElementById('update-toast').classList.add('show');
-  }
-  function dismissToast() {
-    document.getElementById('update-toast').classList.remove('show');
-  }
+  function showToast() { document.getElementById('update-toast').classList.add('show'); }
+  function dismissToast() { document.getElementById('update-toast').classList.remove('show'); }
   function applyUpdate() {
     dismissToast();
     if (pendingWorker) {
-      // Tell the waiting SW to skip waiting and take over
       pendingWorker.postMessage({ type: 'SKIP_WAITING' });
     } else {
       window.location.reload();
@@ -1100,45 +1869,28 @@
       navigator.serviceWorker.register('https://apphosting-vh.github.io/checklistxv01/sw.js', { updateViaCache: 'none' })
         .then(reg => {
           console.log('[CheckMate] SW registered:', reg.scope);
-
-          // ── Case 1: A new SW is already waiting (page was cached, SW updated in bg) ──
-          if (reg.waiting) {
-            pendingWorker = reg.waiting;
-            showToast();
-          }
-
-          // ── Case 2: A new SW is found during this session ──
+          if (reg.waiting) { pendingWorker = reg.waiting; showToast(); }
           reg.addEventListener('updatefound', () => {
             const newWorker = reg.installing;
             if (!newWorker) return;
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // New version installed, old one still controlling — prompt user
                 pendingWorker = newWorker;
                 showToast();
               }
             });
           });
-
-          // ── Poll for updates every 60 seconds (catches deploys while app is open) ──
           setInterval(() => reg.update(), 60 * 1000);
         })
         .catch(err => console.warn('[CheckMate] SW registration failed:', err));
 
-      // ── When SW takes control, reload to get fresh assets ──
       let refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true;
-          window.location.reload();
-        }
+        if (!refreshing) { refreshing = true; window.location.reload(); }
       });
 
-      // ── Listen for SW_UPDATED message from new SW ──
       navigator.serviceWorker.addEventListener('message', e => {
-        if (e.data && e.data.type === 'SW_UPDATED') {
-          console.log('[CheckMate] App updated to', e.data.version);
-        }
+        if (e.data && e.data.type === 'SW_UPDATED') console.log('[CheckMate] App updated to', e.data.version);
       });
     });
   }
