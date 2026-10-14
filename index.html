@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#6c3fff" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#0f0d1a" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#6c3fff" />
   <meta name="description" content="CheckMate – A beautiful mobile checklist app" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -28,7 +27,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      color-scheme: light dark;
+      color-scheme: light;
       --sat: env(safe-area-inset-top, 0px);
       --sab: env(safe-area-inset-bottom, 0px);
       --sal: env(safe-area-inset-left, 0px);
@@ -49,21 +48,6 @@
       --shadow: 0 4px 24px rgba(108,63,255,0.10);
       --radius: 18px;
       --radius-sm: 10px;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0f0d1a;
-        --surface: #1a1730;
-        --surface2: #221e3a;
-        --card: #1e1a33;
-        --card-hover: #292349;
-        --done-bg: #15122a;
-        --text: #ece9ff;
-        --text-muted: #9d9ac4;
-        --border: rgba(140,110,255,0.20);
-        --shadow: 0 4px 24px rgba(0,0,0,0.45);
-      }
     }
 
     html, body {
@@ -99,9 +83,6 @@
     .header.collapsed { padding-bottom: 10px; }
     .header.collapsed .header-subtitle { display: none; }
     .header.collapsed .logo { font-size: 24px; }
-    @media (prefers-color-scheme: dark) {
-      .header { background: linear-gradient(180deg, var(--surface) 0%, rgba(15,13,26,0) 100%); }
-    }
     .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
     .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -0.5px; }
     .logo span { color: var(--accent); }
@@ -122,7 +103,6 @@
       display: flex; align-items: center; gap: 10px;
       animation: fadeUp 0.3s ease both;
     }
-    @media (prefers-color-scheme: dark) { .error-banner { color: #ff8fa3; } }
     .error-banner button {
       margin-left: auto; border: none; background: transparent; color: inherit;
       font-weight: 800; font-size: 13px; cursor: pointer; text-decoration: underline;
@@ -211,7 +191,6 @@
       min-height: 48px; display: inline-flex; align-items: center;
     }
     .filter-pill.active { background: linear-gradient(135deg,#ede7ff,#fce4ff); border-color: #7c4dff; color: #7c4dff; }
-    @media (prefers-color-scheme: dark) { .filter-pill.active { background: rgba(124,77,255,0.22); color: #c9b6ff; border-color: #7c4dff; } }
     .filter-pill:active { transform: scale(0.95); }
     .filters-spacer { flex: 1; }
     .select-toggle {
@@ -281,13 +260,9 @@
     }
     .badge-due { background: rgba(108,63,255,0.12); color: #5a3fd4; }
     .badge-due.overdue { background: rgba(255,23,68,0.14); color: #d50000; }
-    @media (prefers-color-scheme: dark) { .badge-due { color: #c9b6ff; } .badge-due.overdue { color: #ff8fa3; } }
     .badge-pri-high { background: rgba(255,23,68,0.14); color: #d50000; }
     .badge-pri-medium { background: rgba(255,140,0,0.16); color: #a85400; }
     .badge-pri-low { background: rgba(74,158,255,0.16); color: #1f6fd0; }
-    @media (prefers-color-scheme: dark) {
-      .badge-pri-high { color: #ff8fa3; } .badge-pri-medium { color: #ffc078; } .badge-pri-low { color: #8ec2ff; }
-    }
 
     /* Photo strip on task card */
     .task-photos { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0 2px 44px; -webkit-overflow-scrolling: touch; scrollbar-width: none; touch-action: pan-x pan-y; }
@@ -328,7 +303,6 @@
       cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
       display: inline-flex; align-items: center;
     }
-    @media (prefers-color-scheme: dark) { .clear-done-btn { color: #ff8fb0; } }
     .clear-done-btn:active { transform: scale(0.95); }
 
     /* All-done celebration banner */
@@ -339,9 +313,6 @@
       color: #007a6a; font-weight: 800; font-size: 16px;
       display: flex; align-items: center; gap: 8px;
       animation: fadeUp 0.3s ease both;
-    }
-    @media (prefers-color-scheme: dark) {
-      .all-done-banner { background: linear-gradient(135deg, rgba(0,191,165,0.18), rgba(0,191,165,0.08)); color: #6ff0dd; }
     }
 
     /* FAB */
