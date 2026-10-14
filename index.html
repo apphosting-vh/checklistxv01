@@ -1846,7 +1846,7 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('https://apphosting-vh.github.io/checklistxv01/sw.js', { updateViaCache: 'none' })
+      navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
         .then(reg => {
           console.log('[Memory List] SW registered:', reg.scope);
           if (reg.waiting) { pendingWorker = reg.waiting; showToast(); }
