@@ -1,6 +1,6 @@
 {
-  "name": "CheckMate - Checklist App",
-  "short_name": "CheckMate",
+  "name": "Memory List - Checklist App",
+  "short_name": "Memory List",
   "description": "A beautiful, offline-capable mobile checklist app. Create checklists, manage tasks with priorities, and stay organised — all saved locally on your device.",
 
   "start_url": "./index.html",
@@ -96,14 +96,14 @@
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "CheckMate home screen showing checklists"
+      "label": "Memory List home screen showing checklists"
     },
     {
       "src": "screenshots/screen-mobile-2.png",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "CheckMate task view with priorities"
+      "label": "Memory List task view with priorities"
     }
   ],
 
