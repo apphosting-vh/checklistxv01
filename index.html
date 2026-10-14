@@ -719,6 +719,8 @@
   // ── Focus trap / Escape hook ──
   function useModalA11y(onClose) {
     const ref = useRef(null);
+    const onCloseRef = useRef(onClose);
+    onCloseRef.current = onClose;
     useEffect(() => {
       const prev = document.activeElement;
       const node = ref.current;
@@ -726,10 +728,9 @@
         ? Array.from(node.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
             .filter(el => !el.disabled)
         : [];
-      const f = focusables();
       const firstTimer = setTimeout(() => { const list = focusables(); if (list.length) list[0].focus(); }, 60);
       const onKey = (e) => {
-        if (e.key === 'Escape') { e.stopPropagation(); onClose(); return; }
+        if (e.key === 'Escape') { e.stopPropagation(); onCloseRef.current(); return; }
         if (e.key === 'Tab') {
           const list = focusables();
           if (!list.length) return;
@@ -744,7 +745,7 @@
         document.removeEventListener('keydown', onKey, true);
         if (prev && prev.focus) { try { prev.focus(); } catch(_){} }
       };
-    }, [onClose]);
+    }, []);
     return ref;
   }
 
@@ -1120,9 +1121,9 @@
 
       // FAB
       view === 'lists'
-        ? h('button', { className: 'fab' + (kbOpen ? ' hidden' : ''), onClick: () => setModal({ type: 'newList' }) },
+        ? h('button', { className: 'fab' + (kbOpen && !modal && !lightbox ? ' hidden' : ''), onClick: () => setModal({ type: 'newList' }) },
             h(IconPlus, { size: 22 }), 'New Checklist')
-        : h('button', { className: 'fab' + (kbOpen ? ' hidden' : ''), onClick: () => setModal({ type: 'newTask' }) },
+        : h('button', { className: 'fab' + (kbOpen && !modal && !lightbox ? ' hidden' : ''), onClick: () => setModal({ type: 'newTask' }) },
             h(IconPlus, { size: 22 }), 'Add Item'),
 
       // Install prompt

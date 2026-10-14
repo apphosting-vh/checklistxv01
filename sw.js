@@ -1,6 +1,6 @@
 // ── CheckMate Service Worker ──
 // Bump APP_VERSION with every GitHub Pages deploy to trigger auto-update
-const APP_VERSION = 'v12';
+const APP_VERSION = 'v13';
 const CACHE = 'checkmate-' + APP_VERSION;
 
 const PRECACHE = [
