@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#6c3fff" />
-  <meta name="description" content="CheckMate – A beautiful mobile checklist app" />
+  <meta name="description" content="Memory List – A beautiful mobile checklist app" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="CheckMate" />
-  <title>CheckMate</title>
+  <meta name="apple-mobile-web-app-title" content="Memory List" />
+  <title>Memory List</title>
   <!-- Handle GitHub Pages SPA redirect from 404.html -->
   <script>
     (function(){
@@ -671,14 +671,22 @@
   ];
 
   // ── Local storage helpers ──
-  const STORE_KEY = 'checkmate_v3';
+  const STORE_KEY = 'memorylist_v3';
+  const LEGACY_STORE_KEY = 'checkmate_v3';
   const SCHEMA_VERSION = 4;
 
   const defaultData = () => ({ version: SCHEMA_VERSION, lists: [], tasks: {} });
 
   const load = () => {
     try {
-      const raw = localStorage.getItem(STORE_KEY);
+      let raw = localStorage.getItem(STORE_KEY);
+      if (!raw) {
+        const legacy = localStorage.getItem(LEGACY_STORE_KEY);
+        if (legacy) {
+          raw = legacy;
+          try { localStorage.setItem(STORE_KEY, legacy); } catch(_) {}
+        }
+      }
       if (!raw) return defaultData();
       const parsed = JSON.parse(raw);
       if (!parsed.version || parsed.version < SCHEMA_VERSION) {
@@ -694,7 +702,7 @@
       }
       return parsed;
     } catch(e) {
-      console.warn('CheckMate: localStorage read failed, starting fresh.', e);
+      console.warn('Memory List: localStorage read failed, starting fresh.', e);
       return defaultData();
     }
   };
@@ -704,7 +712,7 @@
       localStorage.setItem(STORE_KEY, JSON.stringify({ ...data, version: SCHEMA_VERSION }));
       return true;
     } catch(e) {
-      console.warn('CheckMate: localStorage write failed.', e);
+      console.warn('Memory List: localStorage write failed.', e);
       return false;
     }
   };
@@ -807,7 +815,7 @@
     const [data, setData] = useState(load);
     const [view, setView] = useState('lists');
     const [activeList, setActiveList] = useState(null);
-    const [taskFilter, setTaskFilter] = useState('all');
+    const [taskFilter, setTaskFilter] = useState('active');
     const [search, setSearch] = useState('');
     const [listSearch, setListSearch] = useState('');
     const [modal, setModal] = useState(null);
@@ -819,7 +827,7 @@
     const [scrolled, setScrolled] = useState(false);
     const [installEvt, setInstallEvt] = useState(null);
     const [installDismissed, setInstallDismissed] = useState(() => {
-      try { return localStorage.getItem('checkmate_a2hs_dismissed') === '1'; } catch(_) { return false; }
+      try { return localStorage.getItem('memorylist_a2hs_dismissed') === '1'; } catch(_) { return false; }
     });
 
     const contentRef = useRef(null);
@@ -1020,7 +1028,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'checkmate-backup-' + new Date().toISOString().slice(0,10) + '.json';
+        a.download = 'memorylist-backup-' + new Date().toISOString().slice(0,10) + '.json';
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -1070,7 +1078,7 @@
       // Header
       h('div', { className: 'header' + (scrolled ? ' collapsed' : '') },
         h('div', { className: 'header-top' },
-          h('div', { className: 'logo' }, 'Check', h('span', null, 'Mate')),
+          h('div', { className: 'logo' }, 'Memory ', h('span', null, 'List')),
           h('button', {
             className: 'icon-btn', 'aria-label': 'Settings and backup', title: 'Settings & backup',
             onClick: () => setModal({ type: 'settings' })
@@ -1093,7 +1101,7 @@
           ? h(ListView, {
               lists, tasks, listProgress, COLORS,
               search: listSearch, onSearch: setListSearch, categories,
-              onOpen: (id) => { setActiveList(id); setView('tasks'); setTaskFilter('all'); setSearch(''); setScrolled(false); if (contentRef.current) contentRef.current.scrollTop = 0; },
+              onOpen: (id) => { setActiveList(id); setView('tasks'); setTaskFilter('active'); setSearch(''); setScrolled(false); if (contentRef.current) contentRef.current.scrollTop = 0; },
               onEdit: (l) => setModal({ type: 'editList', list: l }),
               onDelete: (l) => setModal({ type: 'deleteList', list: l }),
             })
@@ -1127,15 +1135,15 @@
             h(IconPlus, { size: 22 }), 'Add Item'),
 
       // Install prompt
-      installEvt && !installDismissed && h('div', { className: 'install-bar', role: 'dialog', 'aria-label': 'Install CheckMate' },
+      installEvt && !installDismissed && h('div', { className: 'install-bar', role: 'dialog', 'aria-label': 'Install Memory List' },
         h('div', { className: 'install-bar-text' },
-          h('div', { className: 'install-bar-title' }, 'Install CheckMate'),
+          h('div', { className: 'install-bar-title' }, 'Install Memory List'),
           h('div', { className: 'install-bar-sub' }, 'Add to your home screen for a full-screen app')
         ),
         h('button', { className: 'install-bar-btn', onClick: async () => {
           try { installEvt.prompt(); const r = await installEvt.userChoice; if (r && r.outcome === 'accepted') setInstallEvt(null); } catch(_) {}
         } }, 'Install'),
-        h('button', { className: 'install-bar-x', 'aria-label': 'Dismiss install prompt', onClick: () => { setInstallDismissed(true); try { localStorage.setItem('checkmate_a2hs_dismissed', '1'); } catch(_) {} } }, h(IconX, { size: 16 }))
+        h('button', { className: 'install-bar-x', 'aria-label': 'Dismiss install prompt', onClick: () => { setInstallDismissed(true); try { localStorage.setItem('memorylist_a2hs_dismissed', '1'); } catch(_) {} } }, h(IconX, { size: 16 }))
       ),
 
       // Snackbar
@@ -1840,7 +1848,7 @@
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('https://apphosting-vh.github.io/checklistxv01/sw.js', { updateViaCache: 'none' })
         .then(reg => {
-          console.log('[CheckMate] SW registered:', reg.scope);
+          console.log('[Memory List] SW registered:', reg.scope);
           if (reg.waiting) { pendingWorker = reg.waiting; showToast(); }
           reg.addEventListener('updatefound', () => {
             const newWorker = reg.installing;
@@ -1854,7 +1862,7 @@
           });
           setInterval(() => reg.update(), 60 * 1000);
         })
-        .catch(err => console.warn('[CheckMate] SW registration failed:', err));
+        .catch(err => console.warn('[Memory List] SW registration failed:', err));
 
       let refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -1862,7 +1870,7 @@
       });
 
       navigator.serviceWorker.addEventListener('message', e => {
-        if (e.data && e.data.type === 'SW_UPDATED') console.log('[CheckMate] App updated to', e.data.version);
+        if (e.data && e.data.type === 'SW_UPDATED') console.log('[Memory List] App updated to', e.data.version);
       });
     });
   }

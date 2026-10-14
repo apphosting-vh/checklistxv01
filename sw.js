@@ -1,7 +1,7 @@
-// ── CheckMate Service Worker ──
+// ── Memory List Service Worker ──
 // Bump APP_VERSION with every GitHub Pages deploy to trigger auto-update
-const APP_VERSION = 'v13';
-const CACHE = 'checkmate-' + APP_VERSION;
+const APP_VERSION = 'v15';
+const CACHE = 'memorylist-' + APP_VERSION;
 
 const PRECACHE = [
   './',
